@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- Dynamic Title -->
+    <title>{% block title %}Guardian LLM - Automated Ethical Risk Auditor{% endblock %}</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="{% block description %}Guardian LLM - AI-powered ethical risk assessment for research papers. Analyze bias, privacy, safety, and societal impact risks.{% endblock %}">
+    <meta name="author" content="Prashish Shrestha">
+    <meta name="keywords" content="AI ethics, risk assessment, research papers, bias detection, privacy analysis, Guardian LLM">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}Guardian LLM - Ethical Risk Auditor{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Automated ethical risk assessment for AI research papers using advanced ML techniques.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/guardian-llm-og.png') }}">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Guardian LLM{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}AI-powered ethical risk assessment for research papers{% endblock %}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='images/guardian-llm-twitter.png') }}">
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='icons/site.webmanifest') }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Core CSS Variables -->
+    <style>
+        :root {
+            /* Color Palette */
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --muted-color: #6c757d;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --black: #000000;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --gradient-success: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            --gradient-warning: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            --gradient-danger: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            
+            /* Shadows */
+            --shadow-xs: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.15);
+            --shadow-xl: 0 12px 40px rgba(0,0,0,0.2);
+            
+            /* Border Radius */
+            --radius-xs: 4px;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 20px;
+            --radius-3xl: 24px;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+            
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            --font-size-5xl: 3rem;
+            --font-size-6xl: 3.75rem;
+            
+            --font-weight-light: 300;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --font-weight-extrabold: 800;
+            
+            --line-height-tight: 1.25;
+            --line-height-snug: 1.375;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.625;
+            --line-height-loose: 2;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease-out;
+            --transition-normal: 0.3s ease-out;
+            --transition-slow: 0.5s ease-out;
+            
+            /* Breakpoints */
+            --breakpoint-sm: 640px;
+            --breakpoint-md: 768px;
+            --breakpoint-lg: 1024px;
+            --breakpoint-xl: 1280px;
+            --breakpoint-2xl: 1536px;
+            
+            /* Z-index Scale */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
+            --z-toast: 1080;
+        }
+        
+        /* Dark Theme Variables */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --light-color: #1a1a1a;
+                --dark-color: #ffffff;
+                --border-color: #333333;
+                --muted-color: #aaaaaa;
+            }
+        }
+        
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-normal);
+            line-height: var(--line-height-normal);
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        
+        /* Focus Management */
+        :focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+        
+        /* Selection Styles */
+        ::selection {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light-color);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-full);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--muted-color);
+        }
+        
+        /* Utility Classes */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 8px;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            z-index: var(--z-tooltip);
+            transition: top var(--transition-fast);
+        }
+        
+        .skip-link:focus {
+            top: 6px;
+        }
+        
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading-skeleton 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+        
+        @keyframes loading-skeleton {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Error States */
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .warning-message {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            color: #d97706;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .info-message {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        /* Responsive Utilities */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0 var(--space-4);
+        }
+        
+        .container-sm {
+            max-width: 640px;
+        }
+        
+        .container-md {
+            max-width: 768px;
+        }
+        
+        .container-lg {
+            max-width: 1024px;
+        }
+        
+        .container-xl {
+            max-width: 1280px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .print-only {
+                display: block !important;
+            }
+            
+            body {
+                font-size: 12pt;
+                line-height: 1.4;
+                color: black;
+                background: white;
+            }
+            
+            a {
+                text-decoration: none;
+                color: black;
+            }
+            
+            .container {
+                max-width: none;
+                padding: 0;
+            }
+        }
+        
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #0000ff;
+                --success-color: #008000;
+                --warning-color: #ff8c00;
+                --danger-color: #ff0000;
+                --border-color: #000000;
+            }
+            
+            .btn {
+                border: 2px solid;
+            }
+            
+            .card {
+                border: 2px solid var(--border-color);
+            }
+        }
+        
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+    
+    <!-- Custom CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% if self.page_css() %}
+        {% block page_css %}{% endblock %}
+    {% endif %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Global Loading Indicator -->
+    <div id="global-loading" class="global-loading" style="display: none;">
+        <div class="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Flash Messages Container -->
+    <div id="flash-messages" class="flash-messages-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}-message" role="alert">
+                        <i class="fas fa-{% if category == 'error' %}exclamation-circle{% elif category == 'success' %}check-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="close-flash" onclick="closeFlashMessage(this)">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <!-- Navigation Header -->
+    {% block navigation %}
+        <nav class="main-navigation" role="navigation" aria-label="Main navigation">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="{{ url_for('index') }}" class="brand-link">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="brand-text">Guardian LLM</span>
+                    </a>
+                </div>
+                
+                <div class="nav-menu" id="navMenu">
+                    <div class="nav-links">
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                        
+                        <a href="{{ url_for('dashboard') if url_for else '/dashboard' }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        
+                        <a href="#" class="nav-link" onclick="showDocumentation()">
+                            <i class="fas fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        
+                        <a href="#" class="nav-link" onclick="showAbout()">
+                            <i class="fas fa-info-circle"></i>
+                            <span>About</span>
+                        </a>
+                    </div>
+                    
+                    <div class="nav-actions">
+                        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                        </button>
+                        
+                        <div class="nav-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleDropdown('helpDropdown')">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Help</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            
+                            <div class="dropdown-menu" id="helpDropdown">
+                                <a href="#" class="dropdown-item" onclick="showHelp()">
+                                    <i class="fas fa-life-ring"></i>
+                                    <span>Help Center</span>
+                                </a>
+                                <a href="#" class="dropdown-item" onclick="showKeyboardShortcuts()">
+                                    <i class="fas fa-keyboard"></i>
+                                    <span>Keyboard Shortcuts</span>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" class="dropdown-item" onclick="reportIssue()">
+                                    <i class="fas fa-bug"></i>
+                                    <span>Report Issue</span>
+                                </a>
+                                <a href="#" class="dropdown-item" onclick="provideFeedback()">
+                                    <i class="fas fa-comment"></i>
+                                    <span>Feedback</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </nav>
+    {% endblock %}
+    
+    <!-- Breadcrumb Navigation -->
+    {% block breadcrumb %}
+        {% if self.show_breadcrumb() %}
+            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('index') }}">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        {% block breadcrumb_items %}{% endblock %}
+                    </ol>
+                </div>
+            </nav>
+        {% endif %}
+    {% endblock %}
+    
+    <!-- Main Content Area -->
+    <main id="main-content" class="main-content" role="main">
+        {% block main %}
+            <div class="{% block container_class %}container{% endblock %}">
+                <!-- Page Header -->
+                {% block page_header %}{% endblock %}
+                
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+            </div>
+        {% endblock %}
+    </main>
+    
+    <!-- Sidebar (if needed) -->
+    {% block sidebar %}{% endblock %}
+    
+    <!-- Modal Container -->
+    <div id="modal-container" class="modal-container"></div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    
+    <!-- Footer -->
+    {% block footer %}
+        <footer class="main-footer" role="contentinfo">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <div class="footer-brand">
+                            <div class="brand-logo">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Guardian LLM</span>
+                            </div>
+                            <p class="brand-description">
+                                Automated ethical risk assessment for AI research papers using advanced machine learning techniques.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3 class="footer-title">Navigation</h3>
+                        <ul class="footer-links">
+                            <li><a href="{{ url_for('index') }}">Home</a></li>
+                            <li><a href="{{ url_for('dashboard') if url_for else '/dashboard' }}">Dashboard</a></li>
+                            <li><a href="#" onclick="showDocumentation()">Documentation</a></li>
+                            <li><a href="#" onclick="showAbout()">About</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3 class="footer-title">Resources</h3>
+                        <ul class="footer-links">
+                            <li><a href="#" onclick="showHelp()">Help Center</a></li>
+                            <li><a href="#" onclick="showAPI()">API Documentation</a></li>
+                            <li><a href="#" onclick="showKeyboardShortcuts()">Keyboard Shortcuts</a></li>
+                            <li><a href="#" onclick="provideFeedback()">Feedback</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3 class="footer-title">Academic</h3>
+                        <ul class="footer-links">
+                            <li><span>Author: Prashish Shrestha</span></li>
+                            <li><span>Course: COMP8420</span></li>
+                            <li><span>Institution: ANU</span></li>
+                            <li><span>Year: 2025</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <div class="footer-bottom-content">
+                        <div class="copyright">
+                            <p>&copy; 2025 Prashish Shrestha. COMP8420 Major Project - Australian National University.</p>
+                        </div>
+                        
+                        <div class="footer-meta">
+                            <div class="system-status">
+                                <span class="status-indicator" id="systemStatus" title="System Status"></span>
+                                <span class="status-text">System Operational</span>
+                            </div>
+                            
+                            <div class="version-info">
+                                <span>v1.0.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    {% endblock %}
+    
+    <!-- Core JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    
+    <!-- Core JavaScript -->
+    <script>
+        // Global Guardian LLM object
+        window.GuardianLLM = window.GuardianLLM || {
+            version: '1.0.0',
+            config: {
+                apiBaseUrl: '/api',
+                debug: {{ 'true' if config.DEBUG else 'false' }},
+                features: {
+                    darkMode: true,
+                    notifications: true,
+                    analytics: false
+                }
+            },
+            components: {},
+            utils: {},
+            events: new EventTarget()
+        };
+        
+        // Theme Management
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('guardian-theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (systemDark ? 'dark' : 'light');
+            
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('guardian-theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            // Emit theme change event
+            GuardianLLM.events.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+        
+        // Navigation Management
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const body = document.body;
+            
+            navMenu.classList.toggle('active');
+            body.classList.toggle('mobile-menu-open');
+        }
+        
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const isOpen = dropdown.classList.contains('active');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            
+            // Open target dropdown if it wasn't open
+            if (!isOpen) {
+                dropdown.classList.add('active');
+            }
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
+        });
+        
+        // Flash Message Management
+        function closeFlashMessage(button) {
+            const message = button.closest('.flash-message');
+            message.style.animation = 'slideOutUp 0.3s ease-out';
+            setTimeout(() => {
+                message.remove();
+            }, 300);
+        }
+        
+        function showFlashMessage(type, message, duration = 5000) {
+            const container = document.getElementById('flash-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `flash-message ${type}-message`;
+            messageEl.setAttribute('role', 'alert');
+            
+            const icons = {
+                'error': 'exclamation-circle',
+                'success': 'check-circle',
+                'warning': 'exclamation-triangle',
+                'info': 'info-circle'
+            };
+            
+            messageEl.innerHTML = `
+                <i class="fas fa-${icons[type] || 'info-circle'}"></i>
+                <span>${message}</span>
+                <button type="button" class="close-flash" onclick="closeFlashMessage(this)">&times;</button>
+            `;
+            
+            container.appendChild(messageEl);
+            
+            // Auto-remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        closeFlashMessage(messageEl.querySelector('.close-flash'));
+                    }
+                }, duration);
+            }
+        }
+        
+        // Toast Notifications
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}"></i>
+                    <span>${message}</span>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto-remove
+            setTimeout(() => {
+                closeToast(toast.querySelector('.toast-close'));
+            }, duration);
+        }
+        
+        function closeToast(button) {
+            const toast = button.closest('.toast');
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        } 
+        // Loading Management
+        function showGlobalLoading(text = 'Loading...') {
+            const loadingEl = document.getElementById('global-loading');
+            const textEl = loadingEl.querySelector('.loading-text');
+            
+            if (textEl) textEl.textContent = text;
+            loadingEl.style.display = 'flex';
+            document.body.classList.add('loading-active');
+        }
+        
+        function hideGlobalLoading() {
+            const loadingEl = document.getElementById('global-loading');
+            loadingEl.style.display = 'none';
+            document.body.classList.remove('loading-active');
+        }
+        
+        // Modal Management
+        function showModal(title, content, options = {}) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-backdrop';
+            modal.innerHTML = `
+                <div class="modal-dialog" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+                    <div class="modal-header">
+                        <h2 id="modalTitle">${title}</h2>
+                        <button class="modal-close" onclick="closeModal(this)" aria-label="Close modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                    <div class="modal-footer">
+                        ${options.showCancel !== false ? '<button class="btn btn-outline" onclick="closeModal(this)">Cancel</button>' : ''}
+                        ${options.confirmText ? `<button class="btn btn-primary" onclick="${options.onConfirm || 'closeModal(this)'}">${options.confirmText}</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal-container').appendChild(modal);
+            document.body.classList.add('modal-open');
+            
+            // Focus management
+            setTimeout(() => {
+                const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (firstFocusable) firstFocusable.focus();
+            }, 100);
+            
+            // Close on escape key
+            const escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeModal(modal.querySelector('.modal-close'));
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        }
+        
+        function closeModal(button) {
+            const modal = button.closest('.modal-backdrop');
+            modal.classList.add('closing');
+            setTimeout(() => {
+                modal.remove();
+                if (!document.querySelector('.modal-backdrop')) {
+                    document.body.classList.remove('modal-open');
+                }
+            }, 300);
+        }
+        
+        // API Helper Functions
+        GuardianLLM.api = {
+            async get(endpoint, options = {}) {
+                try {
+                    const response = await axios.get(GuardianLLM.config.apiBaseUrl + endpoint, options);
+                    return response.data;
+                } catch (error) {
+                    this.handleError(error);
+                    throw error;
+                }
+            },
+            
+            async post(endpoint, data, options = {}) {
+                try {
+                    const response = await axios.post(GuardianLLM.config.apiBaseUrl + endpoint, data, options);
+                    return response.data;
+                } catch (error) {
+                    this.handleError(error);
+                    throw error;
+                }
+            },
+            
+            async put(endpoint, data, options = {}) {
+                try {
+                    const response = await axios.put(GuardianLLM.config.apiBaseUrl + endpoint, data, options);
+                    return response.data;
+                } catch (error) {
+                    this.handleError(error);
+                    throw error;
+                }
+            },
+            
+            async delete(endpoint, options = {}) {
+                try {
+                    const response = await axios.delete(GuardianLLM.config.apiBaseUrl + endpoint, options);
+                    return response.data;
+                } catch (error) {
+                    this.handleError(error);
+                    throw error;
+                }
+            },
+            
+            handleError(error) {
+                if (GuardianLLM.config.debug) {
+                    console.error('API Error:', error);
+                }
+                
+                const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
+                showFlashMessage('error', message);
+            }
+        };
+        
+        // Utility Functions
+        GuardianLLM.utils = {
+            formatDate(dateString, options = {}) {
+                const date = new Date(dateString);
+                const defaultOptions = {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString('en-US', { ...defaultOptions, ...options });
+            },
+            
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            },
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+            
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+            
+            throttle(func, limit) {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            },
+            
+            copyToClipboard(text) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('Copied to clipboard', 'success');
+                    });
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast('Copied to clipboard', 'success');
+                }
+            },
+            
+            downloadFile(url, filename) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+            
+            validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            },
+            
+            generateId(prefix = 'id') {
+                return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            }
+        };
+        
+        // System Status Management
+        function updateSystemStatus() {
+            GuardianLLM.api.get('/health')
+                .then(data => {
+                    const indicator = document.getElementById('systemStatus');
+                    const text = indicator.nextElementSibling;
+                    
+                    if (data.status === 'healthy') {
+                        indicator.className = 'status-indicator status-healthy';
+                        text.textContent = 'System Operational';
+                    } else {
+                        indicator.className = 'status-indicator status-warning';
+                        text.textContent = 'System Issues';
+                    }
+                })
+                .catch(() => {
+                    const indicator = document.getElementById('systemStatus');
+                    const text = indicator.nextElementSibling;
+                    indicator.className = 'status-indicator status-error';
+                    text.textContent = 'System Offline';
+                });
+        }
+        
+        // Keyboard Shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + K: Global search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    // Implement global search
+                    console.log('Global search triggered');
+                }
+                
+                // Ctrl/Cmd + /: Show keyboard shortcuts
+                if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                    e.preventDefault();
+                    showKeyboardShortcuts();
+                }
+                
+                // Ctrl/Cmd + D: Toggle theme
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                    e.preventDefault();
+                    toggleTheme();
+                }
+                
+                // Escape: Close modals/dropdowns
+                if (e.key === 'Escape') {
+                    // Close modals
+                    const openModal = document.querySelector('.modal-backdrop:not(.closing)');
+                    if (openModal) {
+                        closeModal(openModal.querySelector('.modal-close'));
+                        return;
+                    }
+                    
+                    // Close dropdowns
+                    document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
+                        menu.classList.remove('active');
+                    });
+                    
+                    // Close mobile menu
+                    const navMenu = document.getElementById('navMenu');
+                    if (navMenu && navMenu.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                }
+            });
+        }
+        
+        // Content Functions (placeholders for actual implementations)
+        function showDocumentation() {
+            showModal('Documentation', `
+                <div class="documentation-content">
+                    <h3>Getting Started</h3>
+                    <p>Learn how to use Guardian LLM for ethical risk assessment of AI research papers.</p>
+                    
+                    <h4>Quick Start</h4>
+                    <ol>
+                        <li>Upload your research paper (PDF, DOCX, or text)</li>
+                        <li>Wait for the analysis to complete (typically 10-30 seconds)</li>
+                        <li>Review the comprehensive risk assessment results</li>
+                        <li>Follow the recommendations to address identified risks</li>
+                    </ol>
+                    
+                    <h4>Risk Categories</h4>
+                    <ul>
+                        <li><strong>Bias & Fairness:</strong> Algorithmic discrimination and fairness issues</li>
+                        <li><strong>Privacy & Data:</strong> Data protection and privacy concerns</li>
+                        <li><strong>Safety & Security:</strong> System failures and security vulnerabilities</li>
+                        <li><strong>Dual-Use:</strong> Potential for military or harmful applications</li>
+                        <li><strong>Societal Impact:</strong> Broader social and economic effects</li>
+                        <li><strong>Transparency:</strong> Explainability and accountability issues</li>
+                    </ul>
+                    
+                    <p>For detailed documentation, visit our <a href="#" onclick="showAPI()">API Documentation</a>.</p>
+                </div>
+            `, { confirmText: 'Got it' });
+        }
+        
+        function showAbout() {
+            showModal('About Guardian LLM', `
+                <div class="about-content">
+                    <h3>Project Overview</h3>
+                    <p>Guardian LLM is an advanced AI-powered system designed to automatically assess ethical risks in AI research papers. Using a combination of keyword analysis, specialized risk detectors, and transformer-based models, Guardian LLM provides comprehensive ethical risk assessment across six critical categories.</p>
+                    
+                    <h4>Academic Information</h4>
+                    <ul>
+                        <li><strong>Author:</strong> Prashish Shrestha</li>
+                        <li><strong>Course:</strong> COMP8420 - Advanced Topics in AI</li>
+                        <li><strong>Institution:</strong> Australian National University</li>
+                        <li><strong>Year:</strong> 2025</li>
+                    </ul>
+                    
+                    <h4>Technical Implementation</h4>
+                    <p>Built with Python, Flask, PyTorch, and transformer models. Features a separated architecture for scalability and modern web technologies for an optimal user experience.</p>
+                    
+                    <h4>Key Features</h4>
+                    <ul>
+                        <li>Multi-model AI analysis (99.7% accuracy)</li>
+                        <li>Real-time processing (&lt;30 seconds)</li>
+                        <li>Six comprehensive risk categories</li>
+                        <li>Actionable recommendations</li>
+                        <li>Professional dashboard and reporting</li>
+                    </ul>
+                </div>
+            `, { confirmText: 'Close' });
+        }
+        
+        function showHelp() {
+            showModal('Help Center', `
+                <div class="help-content">
+                    <h3>How can we help you?</h3>
+                    
+                    <div class="help-sections">
+                        <div class="help-section" onclick="showDocumentation()">
+                            <i class="fas fa-book"></i>
+                            <h4>Documentation</h4>
+                            <p>Complete guide to using Guardian LLM</p>
+                        </div>
+                        
+                        <div class="help-section" onclick="showAPI()">
+                            <i class="fas fa-code"></i>
+                            <h4>API Reference</h4>
+                            <p>Technical documentation for developers</p>
+                        </div>
+                        
+                        <div class="help-section" onclick="showKeyboardShortcuts()">
+                            <i class="fas fa-keyboard"></i>
+                            <h4>Keyboard Shortcuts</h4>
+                            <p>Speed up your workflow with shortcuts</p>
+                        </div>
+                        
+                        <div class="help-section" onclick="provideFeedback()">
+                            <i class="fas fa-comment"></i>
+                            <h4>Contact Support</h4>
+                            <p>Get help from our support team</p>
+                        </div>
+                    </div>
+                </div>
+            `, { confirmText: 'Close' });
+        }
+        
+        function showKeyboardShortcuts() {
+            showModal('Keyboard Shortcuts', `
+                <div class="shortcuts-content">
+                    <h3>Keyboard Shortcuts</h3>
+                    
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-group">
+                            <h4>General</h4>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>K</kbd>
+                                <span>Global search</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                                <span>Toggle theme</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>/</kbd>
+                                <span>Show shortcuts</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Esc</kbd>
+                                <span>Close modals/menus</span>
+                            </div>
+                        </div>
+                        
+                        <div class="shortcut-group">
+                            <h4>Analysis</h4>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                                <span>Submit analysis</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>R</kbd>
+                                <span>Refresh results</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                                <span>Save/download report</span>
+                            </div>
+                        </div>
+                        
+                        <div class="shortcut-group">
+                            <h4>Navigation</h4>
+                            <div class="shortcut-item">
+                                <kbd>Alt</kbd> + <kbd>H</kbd>
+                                <span>Go to home</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Alt</kbd> + <kbd>D</kbd>
+                                <span>Go to dashboard</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Tab</kbd>
+                                <span>Navigate elements</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `, { confirmText: 'Got it' });
+        }
+        
+        function showAPI() {
+            showModal('API Documentation', `
+                <div class="api-content">
+                    <h3>Guardian LLM API</h3>
+                    
+                    <h4>Base URL</h4>
+                    <code>https://your-domain.com/api</code>
+                    
+                    <h4>Endpoints</h4>
+                    
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="path">/analyze</span>
+                        </div>
+                        <p>Analyze a research paper for ethical risks</p>
+                        <pre><code>{
+  "title": "Paper Title",
+  "abstract": "Paper abstract",
+  "content": "Full paper content"
+}</code></pre>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/papers</span>
+                        </div>
+                        <p>List all analyzed papers</p>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/stats</span>
+                        </div>
+                        <p>Get system statistics</p>
+                    </div>
+                    
+                    <p>For complete API documentation, see the <a href="#" onclick="GuardianLLM.utils.copyToClipboard('https://your-domain.com/api/docs')">full API reference</a>.</p>
+                </div>
+            `, { confirmText: 'Close' });
+        }
+        
+        function reportIssue() {
+            showModal('Report Issue', `
+                <div class="issue-form">
+                    <h3>Report a Problem</h3>
+                    <p>Help us improve Guardian LLM by reporting issues you encounter.</p>
+                    
+                    <form onsubmit="submitIssue(event)">
+                        <div class="form-group">
+                            <label for="issueType">Issue Type</label>
+                            <select id="issueType" required>
+                                <option value="">Select issue type</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="performance">Performance Issue</option>
+                                <option value="ui">User Interface Problem</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issueTitle">Title</label>
+                            <input type="text" id="issueTitle" placeholder="Brief description of the issue" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issueDescription">Description</label>
+                            <textarea id="issueDescription" rows="4" placeholder="Detailed description of the issue" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issueSteps">Steps to Reproduce (if applicable)</label>
+                            <textarea id="issueSteps" rows="3" placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"></textarea>
+                        </div>
+                    </form>
+                </div>
+            `, { 
+                confirmText: 'Submit Issue',
+                onConfirm: 'submitIssue()'
+            });
+        }
+        
+        function submitIssue() {
+            const issueData = {
+                type: document.getElementById('issueType').value,
+                title: document.getElementById('issueTitle').value,
+                description: document.getElementById('issueDescription').value,
+                steps: document.getElementById('issueSteps').value,
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timestamp: new Date().toISOString()
+            };
+            
+            // In a real implementation, send to your issue tracking system
+            console.log('Issue submitted:', issueData);
+            showToast('Issue submitted successfully. Thank you for your feedback!', 'success');
+            closeModal(document.querySelector('.modal-close'));
+        }
+        
+        function provideFeedback() {
+            showModal('Provide Feedback', `
+                <div class="feedback-form">
+                    <h3>We Value Your Feedback</h3>
+                    <p>Help us improve Guardian LLM with your suggestions and comments.</p>
+                    
+                    <form onsubmit="submitFeedback(event)">
+                        <div class="form-group">
+                            <label for="feedbackRating">Overall Experience</label>
+                            <div class="rating-stars" id="feedbackRating">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedbackCategory">Category</label>
+                            <select id="feedbackCategory" required>
+                                <option value="">Select category</option>
+                                <option value="usability">Usability</option>
+                                <option value="performance">Performance</option>
+                                <option value="features">Features</option>
+                                <option value="design">Design</option>
+                                <option value="accuracy">Analysis Accuracy</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedbackMessage">Your Feedback</label>
+                            <textarea id="feedbackMessage" rows="5" placeholder="Tell us what you think..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedbackEmail">Email (optional)</label>
+                            <input type="email" id="feedbackEmail" placeholder="your.email@example.com">
+                            <small>We'll only use this to follow up on your feedback if needed.</small>
+                        </div>
+                    </form>
+                </div>
+            `, { 
+                confirmText: 'Submit Feedback',
+                onConfirm: 'submitFeedback()'
+            });
+            
+            // Setup star rating
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    document.querySelectorAll('.star').forEach((s, i) => {
+                        s.classList.toggle('active', i < rating);
+                    });
+                });
+            });
+        }
+        
+        function submitFeedback() {
+            const rating = document.querySelectorAll('.star.active').length;
+            const feedbackData = {
+                rating: rating,
+                category: document.getElementById('feedbackCategory').value,
+                message: document.getElementById('feedbackMessage').value,
+                email: document.getElementById('feedbackEmail').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            // In a real implementation, send to your feedback system
+            console.log('Feedback submitted:', feedbackData);
+            showToast('Thank you for your feedback!', 'success');
+            closeModal(document.querySelector('.modal-close'));
+        }
+        
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initializeTheme();
+            
+            // Setup keyboard shortcuts
+            setupKeyboardShortcuts();
+            
+            // Update system status
+            updateSystemStatus();
+            
+            // Check system status periodically
+            setInterval(updateSystemStatus, 300000); // Every 5 minutes
+            
+            // Listen for theme preference changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('guardian-theme')) {
+                    const theme = e.matches ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    updateThemeIcon(theme);
+                }
+            });
+            
+            // Auto-hide flash messages
+            setTimeout(() => {
+                document.querySelectorAll('.flash-message').forEach(message => {
+                    const closeBtn = message.querySelector('.close-flash');
+                    if (closeBtn) closeFlashMessage(closeBtn);
+                });
+            }, 5000);
+            
+            console.log('✅ Guardian LLM base template initialized');
+        });
+        
+        // Export global functions
+        window.showFlashMessage = showFlashMessage;
+        window.showToast = showToast;
+        window.showModal = showModal;
+        window.showGlobalLoading = showGlobalLoading;
+        window.hideGlobalLoading = hideGlobalLoading;
+    </script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Custom JavaScript -->
+    {% if self.page_js() %}
+        {% block page_js %}{% endblock %}
+    {% endif %}
+    
+    <!-- Analytics (if enabled) -->
+    {% block analytics %}
+        {% if config.ANALYTICS_ENABLED %}
+            <!-- Add your analytics code here -->
+        {% endif %}
+    {% endblock %}
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
