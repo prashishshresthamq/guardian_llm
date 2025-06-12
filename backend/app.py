@@ -57,7 +57,7 @@ def not_found_error(error):
     """Handle 404 errors"""
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Resource not found'}), 404
-    return render_template('404.html'), 404
+    return render_template('404.html', show_breadcrumb=False), 404
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -66,14 +66,14 @@ def internal_error(error):
     app.logger.error(f'Internal error: {error}')
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Internal server error'}), 500
-    return render_template('500.html'), 500
+    return render_template('500.html', show_breadcrumb=False), 500
 
 @app.errorhandler(403)
 def forbidden_error(error):
     """Handle 403 errors"""
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Forbidden'}), 403
-    return render_template('403.html'), 403
+    return render_template('403.html', show_breadcrumb=False), 403
 
 # Main routes
 @app.route('/')
@@ -81,22 +81,60 @@ def index():
     """Landing page"""
     return render_template('index.html', 
                          title='Guardian LLM - AI Text Analysis',
-                         active_page='home')
+                         active_page='home',
+                         show_breadcrumb=False)  # No breadcrumb on home page
 
 @app.route('/dashboard')
 def dashboard():
     """Main dashboard"""
-    stats = {
-        'total_analyses': 1247,
-        'high_risk_detected': 89,
-        'avg_response_time': '234ms',
-        'accuracy_rate': '94.3%'
-    }
+    try:
+        # Import the models
+        from models.database import Paper, Analysis
+        
+        # Get real statistics from database
+        total_papers = Paper.query.count()
+        high_risk_papers = Paper.query.filter(Paper.overall_risk_score >= 7.5).count()
+        
+        # Calculate average processing time
+        avg_processing_time_query = db.session.query(
+            db.func.avg(Paper.processing_time)
+        ).filter(Paper.processing_time.isnot(None)).scalar()
+        
+        avg_processing_time = avg_processing_time_query if avg_processing_time_query else 0
+        
+        # Format processing time
+        if avg_processing_time > 0:
+            avg_processing_time_str = f"{avg_processing_time:.2f}s"
+        else:
+            avg_processing_time_str = "N/A"
+        
+        stats = {
+            'total_analyses': total_papers,
+            'high_risk_detected': high_risk_papers,
+            'avg_response_time': avg_processing_time_str,
+            'accuracy_rate': '94.3%'  # This is still hardcoded as it requires actual accuracy data
+        }
+        
+        # Get recent papers for the table
+        recent_papers = Paper.query.order_by(Paper.upload_time.desc()).limit(10).all()
+        
+    except Exception as e:
+        app.logger.error(f"Dashboard error: {e}")
+        # Fallback to default values
+        stats = {
+            'total_analyses': 0,
+            'high_risk_detected': 0,
+            'avg_response_time': 'N/A',
+            'accuracy_rate': '94.3%'
+        }
+        recent_papers = []
+    
     return render_template('dashboard.html', 
-                         title='Dashboard - Guardian LLM',
-                         active_page='dashboard',
-                         stats=stats)
-
+                             title='Dashboard - Guardian LLM',
+                             active_page='dashboard',
+                             stats=stats,
+                             recent_papers=recent_papers,
+                             show_breadcrumb=True)
 @app.route('/analysis')
 def analysis():
     """Analysis page"""
