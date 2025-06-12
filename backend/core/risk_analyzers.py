@@ -5,7 +5,7 @@ Specialized analyzers for different types of risks
 
 import re
 from typing import Dict, List, Tuple
-from backend.models.schemas import RiskCategory
+from models.schemas import RiskCategory
 import logging
 
 logger = logging.getLogger(__name__)
