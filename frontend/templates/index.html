@@ -7,6 +7,8 @@
     <meta name="description" content="AI-powered ethical risk assessment for research papers. Analyze bias, privacy, safety, and societal impact risks.">
     <meta name="author" content="Prashish Shrestha">
     
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/component.css">
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     
@@ -1228,7 +1230,7 @@
         function setupFileUpload() {
             const uploadArea = document.querySelector('.file-upload');
             const fileInput = document.getElementById('fileInput');
-
+debugger
             // Drag and drop functionality
             uploadArea.addEventListener('dragover', function(e) {
                 e.preventDefault();
@@ -1253,6 +1255,7 @@
 
         // File Selection Handler
         function handleFileSelect(event) {
+            debugger
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1269,7 +1272,7 @@
                 showError('File too large. Maximum size is 16MB.');
                 return;
             }
-
+                debugger
             // Update UI to show selected file
             const uploadText = document.querySelector('.upload-text');
             const uploadHint = document.querySelector('.upload-hint');
@@ -1283,6 +1286,7 @@
 
         // Analyze File
         async function analyzeFile(file) {
+            debugger
             const formData = new FormData();
             formData.append('file', file);
             

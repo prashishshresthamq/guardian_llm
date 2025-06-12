@@ -1,58 +1,64 @@
+"""
+Guardian LLM - Risk Analyzers
+Specialized analyzers for different types of risks
+"""
+
 import re
-import torch
-from transformers import AutoTokenizer, AutoModel
 from typing import Dict, List, Tuple
 from backend.models.schemas import RiskCategory
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 class KeywordAnalyzer:
     """Keyword-based risk analysis"""
     
     def __init__(self):
         self.risk_keywords = {
-            RiskCategory.BIAS_FAIRNESS: [
-                'bias', 'fairness', 'discrimination', 'demographic', 'gender', 'race', 'ethnicity',
-                'inequality', 'disparity', 'prejudice', 'stereotyp', 'unfair', 'equit', 'inclusive'
+            RiskCategory.VIOLENCE: [
+                'violence', 'violent', 'attack', 'assault', 'fight', 'weapon', 'gun', 'knife', 
+                'bomb', 'kill', 'murder', 'hurt', 'harm', 'abuse', 'beat', 'punch', 'stab'
             ],
-            RiskCategory.PRIVACY_DATA: [
-                'privacy', 'personal data', 'gdpr', 'consent', 'anonymiz', 'pseudonym',
-                'confidential', 'sensitive data', 'pii', 'data protection', 'surveillance',
-                'biometric', 'facial recognition', 'tracking'
+            RiskCategory.SELF_HARM: [
+                'suicide', 'suicidal', 'self-harm', 'self harm', 'cut myself', 'end my life', 
+                'kill myself', 'want to die', 'better off dead', 'overdose', 'slit wrists'
             ],
-            RiskCategory.SAFETY_SECURITY: [
-                'safety', 'security', 'vulnerability', 'attack', 'adversarial', 'robust',
-                'failure', 'risk', 'harm', 'dangerous', 'malicious', 'threat', 'breach'
+            RiskCategory.HATE_SPEECH: [
+                'hate', 'racist', 'racism', 'discrimination', 'bigot', 'prejudice', 
+                'supremacist', 'nazi', 'slur', 'derogatory', 'offensive'
             ],
-            RiskCategory.DUAL_USE: [
-                'military', 'weapon', 'warfare', 'surveillance', 'reconnaissance', 'dual-use',
-                'defense', 'combat', 'targeting', 'autonomous weapon', 'drone', 'lethal'
+            RiskCategory.HARASSMENT: [
+                'harass', 'bully', 'threaten', 'stalk', 'intimidate', 'torment', 
+                'humiliate', 'shame', 'doxx', 'blackmail', 'extort'
             ],
-            RiskCategory.SOCIETAL_IMPACT: [
-                'employment', 'job', 'social', 'economic impact', 'displacement', 'automation',
-                'democracy', 'political', 'manipulation', 'influence', 'society', 'inequality'
+            RiskCategory.ADULT_CONTENT: [
+                'sexual', 'explicit', 'nude', 'pornographic', 'adult content', 'nsfw',
+                'erotic', 'xxx', 'sex', 'fetish'
             ],
-            RiskCategory.TRANSPARENCY: [
-                'explainab', 'interpretab', 'black box', 'opacity', 'transparent', 'accountab',
-                'auditable', 'understandab', 'explain', 'interpret', 'opaque'
+            RiskCategory.MISINFORMATION: [
+                'fake news', 'conspiracy', 'hoax', 'false claim', 'misinformation',
+                'disinformation', 'propaganda', 'misleading', 'fabricated'
+            ],
+            RiskCategory.SPAM: [
+                'spam', 'scam', 'phishing', 'clickbait', 'promotional', 'advertisement',
+                'buy now', 'free money', 'winner', 'congratulations', 'click here'
             ]
         }
         
         self.high_risk_patterns = [
-            r'facial recognition',
-            r'emotion detection',
-            r'behavioral prediction',
-            r'social credit',
-            r'mass surveillance',
-            r'autonomous weapon',
-            r'deepfake',
-            r'synthetic media',
-            r'predictive policing'
+            r'going to kill',
+            r'want to die',
+            r'end it all',
+            r'shoot up',
+            r'bomb threat',
+            r'death threat',
+            r'kill myself',
+            r'self harm'
         ]
     
     def analyze(self, text: str) -> Dict[RiskCategory, float]:
-        """Analyze text for ethical risk keywords"""
+        """Analyze text for risk keywords"""
         text_lower = text.lower()
         scores = {}
         
@@ -62,194 +68,187 @@ class KeywordAnalyzer:
             
             # Check individual keywords
             for keyword in keywords:
-                pattern = r'\b' + re.escape(keyword)
-                matches = len(re.findall(pattern, text_lower))
-                if matches > 0:
-                    score += min(matches * 0.5, 2.0)  # Cap individual keyword contribution
+                if keyword in text_lower:
+                    score += 0.5
                     keyword_matches += 1
             
             # Check high-risk patterns
             for pattern in self.high_risk_patterns:
                 if re.search(pattern, text_lower):
-                    score += 3.0
+                    score += 2.0
             
-            # Bonus for multiple keyword types in same category
-            if keyword_matches > 3:
-                score += 1.0
-            
-            # Normalize score to 0-10 range
-            scores[category] = min(score, 10.0)
+            # Normalize score to 0-1 range
+            scores[category] = min(score / 10.0, 1.0)
         
         return scores
 
-class BiasAnalyzer:
-    """Specialized bias detection"""
+
+class ContextAnalyzer:
+    """Analyze context and severity of risks"""
     
     def __init__(self):
-        self.bias_indicators = [
-            'underrepresented', 'overrepresented', 'demographic bias',
-            'gender bias', 'racial bias', 'algorithmic discrimination',
-            'unfair treatment', 'disparate impact', 'protected class',
-            'algorithmic fairness', 'equitable', 'inclusive design'
-        ]
+        self.severity_modifiers = {
+            'immediate': 2.0,
+            'planning': 1.5,
+            'going to': 1.5,
+            'will': 1.3,
+            'want to': 1.2,
+            'thinking about': 1.1,
+            'might': 0.8,
+            'could': 0.8
+        }
         
-        self.demographic_terms = [
-            'gender', 'race', 'ethnicity', 'age', 'disability', 'religion',
-            'sexual orientation', 'nationality', 'socioeconomic', 'cultural'
-        ]
-        
-        self.fairness_terms = [
-            'bias', 'fair', 'equitable', 'discrimination', 'inclusive',
-            'diverse', 'representative', 'balanced'
+        self.mitigation_terms = [
+            'help', 'support', 'therapy', 'counseling', 'treatment',
+            'recovery', 'healing', 'better', 'improve', 'cope'
         ]
     
-    def analyze(self, text: str) -> Tuple[float, List[str]]:
-        """Detect bias-related risks"""
+    def analyze_context(self, text: str, base_scores: Dict[RiskCategory, float]) -> Dict[RiskCategory, float]:
+        """Adjust risk scores based on context"""
         text_lower = text.lower()
-        evidence = []
-        score = 0.0
+        adjusted_scores = base_scores.copy()
         
-        # Check for explicit bias indicators
-        for indicator in self.bias_indicators:
-            if indicator in text_lower:
-                evidence.append(f"Bias indicator found: '{indicator}'")
-                score += 1.5
+        # Check for severity modifiers
+        for modifier, multiplier in self.severity_modifiers.items():
+            if modifier in text_lower:
+                for category in adjusted_scores:
+                    if adjusted_scores[category] > 0:
+                        adjusted_scores[category] = min(adjusted_scores[category] * multiplier, 1.0)
         
-        # Check demographic mentions vs fairness considerations
-        demo_count = sum(1 for term in self.demographic_terms if term in text_lower)
-        fairness_count = sum(1 for term in self.fairness_terms if term in text_lower)
+        # Check for mitigation terms (reduce score if discussing help/recovery)
+        mitigation_count = sum(1 for term in self.mitigation_terms if term in text_lower)
+        if mitigation_count > 0:
+            mitigation_factor = 0.8 ** mitigation_count  # Reduce by 20% for each mitigation term
+            for category in adjusted_scores:
+                if category in [RiskCategory.SELF_HARM, RiskCategory.VIOLENCE]:
+                    adjusted_scores[category] *= mitigation_factor
         
-        if demo_count >= 2:
-            if fairness_count == 0:
-                evidence.append("Multiple demographic groups mentioned without fairness considerations")
-                score += 3.0
-            elif fairness_count < demo_count / 2:
-                evidence.append("Limited fairness discussion relative to demographic complexity")
-                score += 1.5
-        
-        # Check for dataset bias indicators
-        dataset_patterns = [
-            r'dataset.*bias', r'training.*data.*bias', r'sample.*bias',
-            r'selection.*bias', r'representation.*gap'
-        ]
-        
-        for pattern in dataset_patterns:
-            if re.search(pattern, text_lower):
-                evidence.append("Dataset bias considerations mentioned")
-                score += 1.0
-        
-        return min(score, 10.0), evidence
+        return adjusted_scores
 
-class PrivacyAnalyzer:
-    """Privacy and data protection analysis"""
+
+class PatternAnalyzer:
+    """Analyze patterns and combinations of risks"""
     
     def __init__(self):
-        self.privacy_risks = [
-            'personal information', 'sensitive data', 'biometric data',
-            'location data', 'tracking', 'profiling', 'identification',
-            'facial recognition', 'voice recognition', 'behavioral data'
-        ]
-        
-        self.data_collection_terms = [
-            'collect', 'gather', 'acquire', 'obtain', 'scrape',
-            'harvest', 'mine', 'extract', 'capture'
-        ]
-        
-        self.consent_terms = [
-            'consent', 'permission', 'authorization', 'gdpr', 'ccpa',
-            'opt-in', 'opt-out', 'privacy policy', 'terms of service'
+        self.dangerous_combinations = [
+            ([RiskCategory.SELF_HARM, RiskCategory.VIOLENCE], 1.5),
+            ([RiskCategory.HATE_SPEECH, RiskCategory.HARASSMENT], 1.3),
+            ([RiskCategory.VIOLENCE, RiskCategory.HATE_SPEECH], 1.4)
         ]
     
-    def analyze(self, text: str) -> Tuple[float, List[str]]:
-        """Analyze privacy risks"""
-        text_lower = text.lower()
-        evidence = []
-        score = 0.0
+    def analyze_patterns(self, scores: Dict[RiskCategory, float]) -> Dict[str, any]:
+        """Analyze patterns in risk scores"""
+        results = {
+            'combined_risk': 0.0,
+            'risk_pattern': None,
+            'escalation_risk': False
+        }
         
-        # Check for privacy risk indicators
-        for risk in self.privacy_risks:
-            if risk in text_lower:
-                evidence.append(f"Privacy risk detected: '{risk}'")
-                score += 1.5
+        # Check for dangerous combinations
+        for categories, multiplier in self.dangerous_combinations:
+            if all(scores.get(cat, 0) > 0.3 for cat in categories):
+                results['combined_risk'] = max(results['combined_risk'], 
+                                             max(scores[cat] for cat in categories) * multiplier)
+                results['risk_pattern'] = [cat.value for cat in categories]
         
-        # Check data collection vs consent
-        has_data_collection = any(term in text_lower for term in self.data_collection_terms)
-        has_consent_mention = any(term in text_lower for term in self.consent_terms)
+        # Check for escalation risk (multiple high scores)
+        high_risk_count = sum(1 for score in scores.values() if score > 0.6)
+        if high_risk_count >= 2:
+            results['escalation_risk'] = True
         
-        if has_data_collection:
-            if not has_consent_mention:
-                evidence.append("Data collection mentioned without consent procedures")
-                score += 2.5
-            else:
-                evidence.append("Data collection with consent considerations")
-                score += 0.5
-        
-        # Check for specific privacy violations
-        violation_patterns = [
-            r'without.*consent', r'involuntary.*data', r'covert.*collection',
-            r'unauthorized.*access', r'data.*breach'
-        ]
-        
-        for pattern in violation_patterns:
-            if re.search(pattern, text_lower):
-                evidence.append("Potential privacy violation detected")
-                score += 3.0
-        
-        return min(score, 10.0), evidence
+        return results
 
-class TransformerAnalyzer:
-    """Advanced transformer-based analysis"""
+
+class RiskAnalyzer:
+    """Main risk analyzer that combines all analysis methods"""
     
-    def __init__(self, model_name: str = "bert-base-uncased"):
-        self.model_name = model_name
-        self.tokenizer = None
-        self.model = None
-        
-        try:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModel.from_pretrained(model_name)
-            logger.info(f"Loaded transformer model: {model_name}")
-        except Exception as e:
-            logger.warning(f"Could not load transformer model: {e}")
+    def __init__(self):
+        """Initialize all analyzer components"""
+        self.keyword_analyzer = KeywordAnalyzer()
+        self.context_analyzer = ContextAnalyzer()
+        self.pattern_analyzer = PatternAnalyzer()
     
-    def analyze(self, text: str) -> Dict[str, float]:
-        """Classify text using transformer models"""
-        if not self.tokenizer or not self.model:
-            return {category.value: 0.0 for category in RiskCategory}
+    def analyze_text(self, text: str) -> Dict[str, any]:
+        """
+        Analyze text for various risk factors
         
-        try:
-            # Chunk text for processing
-            max_length = 512
-            chunks = [text[i:i+max_length] for i in range(0, len(text), max_length)]
+        Args:
+            text: Text to analyze
             
-            risk_scores = {category.value: 0.0 for category in RiskCategory}
-            
-            for chunk in chunks[:3]:  # Process first 3 chunks
-                inputs = self.tokenizer(
-                    chunk, 
-                    return_tensors="pt", 
-                    truncation=True, 
-                    padding=True, 
-                    max_length=512
-                )
-                
-                with torch.no_grad():
-                    outputs = self.model(**inputs)
-                
-                # Extract embeddings and compute risk scores
-                embeddings = outputs.last_hidden_state.mean(dim=1)
-                
-                # Simple risk scoring (in production, use trained classifiers)
-                for i, category in enumerate(RiskCategory):
-                    idx = i % embeddings.shape[1]
-                    risk_scores[category.value] += float(embeddings[0][idx].abs())
-            
-            # Normalize scores
-            for category in risk_scores:
-                risk_scores[category] = min(abs(risk_scores[category]) * 2, 10.0)
-            
-            return risk_scores
-            
-        except Exception as e:
-            logger.error(f"Transformer analysis error: {e}")
-            return {category.value: 0.0 for category in RiskCategory}
+        Returns:
+            Dictionary containing risk analysis results
+        """
+        results = {
+            'risk_scores': {},
+            'adjusted_scores': {},
+            'patterns': {},
+            'high_risk_categories': [],
+            'critical_categories': [],
+            'overall_risk': 0.0,
+            'risk_level': 'low'
+        }
+        
+        # Step 1: Keyword-based analysis
+        keyword_scores = self.keyword_analyzer.analyze(text)
+        results['risk_scores'] = {cat.value: score for cat, score in keyword_scores.items()}
+        
+        # Step 2: Context analysis
+        adjusted_scores = self.context_analyzer.analyze_context(text, keyword_scores)
+        results['adjusted_scores'] = {cat.value: score for cat, score in adjusted_scores.items()}
+        
+        # Step 3: Pattern analysis
+        pattern_results = self.pattern_analyzer.analyze_patterns(adjusted_scores)
+        results['patterns'] = pattern_results
+        
+        # Step 4: Identify high-risk categories
+        for category, score in adjusted_scores.items():
+            if score > 0.6:
+                results['high_risk_categories'].append(category.value)
+            if score > 0.8:
+                results['critical_categories'].append(category.value)
+        
+        # Step 5: Calculate overall risk
+        if results['critical_categories']:
+            results['overall_risk'] = max(adjusted_scores.values())
+            results['risk_level'] = 'critical'
+        elif results['high_risk_categories']:
+            results['overall_risk'] = max(adjusted_scores.values())
+            results['risk_level'] = 'high'
+        elif any(score > 0.3 for score in adjusted_scores.values()):
+            results['overall_risk'] = max(adjusted_scores.values())
+            results['risk_level'] = 'medium'
+        else:
+            results['overall_risk'] = max(adjusted_scores.values()) if adjusted_scores else 0.0
+            results['risk_level'] = 'low'
+        
+        # Add combined risk from patterns
+        if pattern_results['combined_risk'] > results['overall_risk']:
+            results['overall_risk'] = min(pattern_results['combined_risk'], 1.0)
+            if results['overall_risk'] > 0.8:
+                results['risk_level'] = 'critical'
+            elif results['overall_risk'] > 0.6:
+                results['risk_level'] = 'high'
+        
+        return results
+    
+    def get_risk_evidence(self, text: str, category: RiskCategory) -> List[str]:
+        """Get specific evidence for a risk category"""
+        evidence = []
+        text_lower = text.lower()
+        
+        if category in self.keyword_analyzer.risk_keywords:
+            keywords = self.keyword_analyzer.risk_keywords[category]
+            for keyword in keywords:
+                if keyword in text_lower:
+                    # Find context around keyword
+                    index = text_lower.find(keyword)
+                    start = max(0, index - 30)
+                    end = min(len(text), index + len(keyword) + 30)
+                    context = text[start:end]
+                    if start > 0:
+                        context = "..." + context
+                    if end < len(text):
+                        context = context + "..."
+                    evidence.append(f"Found '{keyword}': {context}")
+        
+        return evidence
