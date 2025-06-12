@@ -12,7 +12,7 @@ from textblob import TextBlob
 import numpy as np
 
 # Import local modules
-from backend.models.schemas import (
+from models.schemas import (
     RiskLevel, 
     RiskCategory, 
     SentimentType,
@@ -20,9 +20,9 @@ from backend.models.schemas import (
     risk_level_from_score,
     sentiment_type_from_scores
 )
-from backend.config.setting import Config
-from backend.core.text_processors import TextProcessor
-from backend.core.risk_analyzers import RiskAnalyzer
+from config.setting import Config
+from core.text_processors import TextProcessor
+from core.risk_analyzers import RiskAnalyzer
 
 # Download required NLTK data
 try:

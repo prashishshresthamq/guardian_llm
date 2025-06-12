@@ -1,3 +1,4 @@
+# backend/app.py
 #!/usr/bin/env python3
 """
 Guardian LLM - Main Flask Application
@@ -13,15 +14,11 @@ from datetime import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import custom modules
-from backend.config.setting import Config
-from backend.models.database import db
-from backend.api.routes import api_blueprint
-from backend.core.guardian_engine import GuardianEngine
-
+# Import custom modules - fix the import path
+from config.setting import Config # Changed from 'setting' to 'settings'
+from models.database import db, init_db
+from api.routes import api_blueprint
+from core.guardian_engine import GuardianEngine
 # Initialize Flask app
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -36,6 +33,7 @@ db.init_app(app)
 
 # Initialize Guardian Engine
 guardian_engine = GuardianEngine()
+app.config['guardian_engine'] = guardian_engine
 
 # Register blueprints
 app.register_blueprint(api_blueprint, url_prefix='/api')
@@ -160,7 +158,7 @@ def init_db():
 @app.cli.command()
 def seed_db():
     """Seed the database with sample data"""
-    from backend.models import Analysis, User
+    from models.database import Analysis, User
     
     # Create sample user
     user = User(
