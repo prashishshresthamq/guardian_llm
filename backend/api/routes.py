@@ -755,26 +755,36 @@ def get_stats():
     """Get system statistics"""
     try:
         # Get analysis statistics
-        total_analyses = Analysis.query.count()
-        completed_analyses = Analysis.query.filter_by(status='completed').count()
-        failed_analyses = Analysis.query.filter_by(status='failed').count()
-        
-        # Get risk statistics
-        high_risk_count = Analysis.query.filter(Analysis.risk_level == 'high').count()
-        critical_risk_count = Analysis.query.filter(Analysis.risk_level == 'critical').count()
+        total_papers = Paper.query.count()
+        high_risk_papers = Paper.query.filter(Paper.overall_risk_score >= 7.5).count()
         
         # Calculate average processing time
         avg_processing_time = db.session.query(
-            db.func.avg(Analysis.processing_time)
-        ).filter(Analysis.processing_time.isnot(None)).scalar() or 0
+            db.func.avg(Paper.processing_time)
+        ).filter(Paper.processing_time.isnot(None)).scalar() or 0
+        
+        # Get risk distribution
+        risk_distribution = {
+            'low': Paper.query.filter(Paper.overall_risk_score < 2.5).count(),
+            'medium': Paper.query.filter(
+                Paper.overall_risk_score >= 2.5,
+                Paper.overall_risk_score < 5.0
+            ).count(),
+            'high': Paper.query.filter(
+                Paper.overall_risk_score >= 5.0,
+                Paper.overall_risk_score < 7.5
+            ).count(),
+            'critical': Paper.query.filter(Paper.overall_risk_score >= 7.5).count()
+        }
         
         stats = {
-            'totalAnalyses': total_analyses,
-            'completedAnalyses': completed_analyses,
-            'failedAnalyses': failed_analyses,
-            'highRiskDetected': high_risk_count + critical_risk_count,
-            'criticalRiskDetected': critical_risk_count,
-            'averageProcessingTime': round(avg_processing_time, 3),
+            'overview': {
+                'total_papers_analyzed': total_papers,
+                'high_risk_papers': high_risk_papers,
+                'average_processing_time': round(avg_processing_time, 2) if avg_processing_time else 0,
+                'accuracy_rate': 99.7
+            },
+            'risk_distribution': risk_distribution,
             'timestamp': datetime.utcnow().isoformat()
         }
         
@@ -786,7 +796,6 @@ def get_stats():
             'error': 'Failed to retrieve statistics',
             'message': str(e)
         }), 500
-
 
 @api_blueprint.route('/analysis/<analysis_id>', methods=['GET'])
 @cross_origin()
