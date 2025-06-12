@@ -1655,6 +1655,7 @@
 
         // Dashboard initialization
         function initializeDashboard() {
+            debugger
             // Setup navigation
             setupNavigation();
             
@@ -1777,26 +1778,31 @@
 
         // Data loading functions
         async function loadDashboardData() {
-            try {
-                showLoadingSkeletons();
-                
-                const response = await fetch('/api/stats');
-                const data = await response.json();
-                
-                if (response.ok) {
-                    dashboardData = data;
-                    updateDashboardMetrics(data);
-                    updateRiskDistribution(data);
-                    hideLoadingSkeletons();
-                } else {
-                    console.error('Failed to load dashboard data:', data);
-                    showErrorState();
-                }
-            } catch (error) {
-                console.error('Dashboard data error:', error);
-                showErrorState();
-            }
+    try {
+        showLoadingSkeletons();
+        
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        
+        if (response.ok) {
+            dashboardData = data;
+            updateDashboardMetrics(data);
+            updateRiskDistribution(data);
+            hideLoadingSkeletons();
+        } else {
+            console.error('Failed to load dashboard data:', data);
+            showErrorState();
         }
+    } catch (error) {
+        console.error('Dashboard data error:', error);
+        showErrorState();
+        // Show default values when no data
+        document.getElementById('totalPapersMetric').textContent = '0';
+        document.getElementById('highRiskMetric').textContent = '0';
+        document.getElementById('avgTimeMetric').textContent = 'N/A';
+        hideLoadingSkeletons();
+    }
+}
 
         async function loadOverviewData() {
             try {

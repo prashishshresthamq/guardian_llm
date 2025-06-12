@@ -522,22 +522,22 @@
     
     <!-- Breadcrumb Navigation -->
     {% block breadcrumb %}
-        {% if self.show_breadcrumb() %}
-            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
-                <div class="container">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="{{ url_for('index') }}">
-                                <i class="fas fa-home"></i>
-                                <span>Home</span>
-                            </a>
-                        </li>
-                        {% block breadcrumb_items %}{% endblock %}
-                    </ol>
-                </div>
-            </nav>
-        {% endif %}
-    {% endblock %}
+    {% if show_breadcrumb|default(true) %}
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <div class="container">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('index') }}">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    {% block breadcrumb_items %}{% endblock %}
+                </ol>
+            </div>
+        </nav>
+    {% endif %}
+{% endblock %}
     
     <!-- Main Content Area -->
     <main id="main-content" class="main-content" role="main">
@@ -1452,7 +1452,7 @@
     {% endblock %}
     
     <!-- Service Worker Registration -->
-    <script>
+   {# <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
@@ -1464,6 +1464,6 @@
                     });
             });
         }
-    </script>
+    </script> #}
 </body>
 </html>
