@@ -5,6 +5,7 @@ const natural = require('natural');
 const sentiment = require('sentiment');
 const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
+const { debug } = require('console');
 
 // Initialize sentiment analyzer
 const sentimentAnalyzer = new sentiment();
@@ -110,7 +111,7 @@ function calculateRiskScores(text) {
 router.post('/analyze', async (req, res) => {
     try {
         const { text } = req.body;
-        
+        debugger
         if (!text || text.trim().length === 0) {
             return res.status(400).json({
                 error: 'Text is required for analysis'
