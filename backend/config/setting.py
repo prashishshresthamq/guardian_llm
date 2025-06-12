@@ -49,6 +49,9 @@ class Config:
     USE_GPU = False
     MODEL_BATCH_SIZE = 32
     
+    # Model paths
+    LORA_ADAPTER_PATH = os.path.join(MODEL_CACHE_DIR, 'lora_adapters')
+    
     # Risk Detection Settings
     RISK_KEYWORDS = {
         'high_risk': [
@@ -84,6 +87,15 @@ class Config:
     # Cache Settings
     CACHE_TYPE = "simple"
     CACHE_DEFAULT_TIMEOUT = 300
+    
+     # LoRA Settings
+    LORA_ENABLED = True
+    LORA_RANK = 16
+    LORA_ALPHA = 32.0
+    LORA_DROPOUT = 0.1
+    LORA_TARGET_MODULES = ['q_proj', 'v_proj', 'k_proj', 'o_proj']
+    LORA_DOMAINS = ['biomedical', 'legal', 'financial', 'technical', 'social']
+    
     
     # Email Settings (for notifications)
     MAIL_SERVER = os.environ.get('MAIL_SERVER')

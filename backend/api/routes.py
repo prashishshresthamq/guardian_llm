@@ -267,6 +267,8 @@ def analyze_paper(data):
                 'title': title,
                 'authors': authors,
                 'abstract': abstract,
+                'domain': results.get('domain', 'general'),  # Add this line
+                'domain_confidence': results.get('domain_confidence', 0),  # Add this line
                 'upload_time': paper.upload_time.isoformat(),
                 'overall_risk_score': round(overall_risk_score, 1),
                 'processing_time': paper.processing_time,
@@ -874,6 +876,72 @@ def submit_feedback():
             'message': str(e)
         }), 500
 
+@api_blueprint.route('/analyze/domain', methods=['POST'])
+@cross_origin()
+def analyze_with_domain():
+    """
+    Analyze text with domain-specific LoRA adaptation
+    """
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        force_domain = data.get('domain', None)  # Optional: force specific domain
+        
+        if not text:
+            return jsonify({'error': 'No text provided'}), 400
+        
+        # Use Guardian Engine with LoRA
+        results = guardian_engine.analyze_text(text, options={'force_domain': force_domain})
+        
+        # Add domain information to response
+        response = {
+            'detected_domain': results.get('domain', 'general'),
+            'domain_confidence': results.get('domain_confidence', 0.0),
+            'analysis': results
+        }
+        
+        return jsonify(response), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'Domain analysis error: {str(e)}')
+        return jsonify({'error': str(e)}), 500
 
+
+@api_blueprint.route('/lora/train', methods=['POST'])
+@cross_origin()
+def train_lora_adapter():
+    """
+    Train a LoRA adapter for a specific domain
+    """
+    try:
+        data = request.get_json()
+        domain = data.get('domain')
+        training_texts = data.get('texts', [])
+        
+        if not domain or not training_texts:
+            return jsonify({'error': 'Domain and training texts required'}), 400
+        
+        # Initialize and train adapter
+        adapter = LoRAAdapter()
+        adapter.adapt_for_domain(
+            domain_texts=training_texts,
+            domain_name=domain,
+            epochs=data.get('epochs', 3),
+            batch_size=data.get('batch_size', 8)
+        )
+        
+        # Save adapter
+        save_path = os.path.join(current_app.config['LORA_ADAPTER_PATH'])
+        adapter.save_adapter(save_path, domain)
+        
+        return jsonify({
+            'message': f'LoRA adapter trained for domain: {domain}',
+            'domain': domain,
+            'num_texts': len(training_texts)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'LoRA training error: {str(e)}')
+        return jsonify({'error': str(e)}), 500
 # Export the blueprint
 __all__ = ['api_blueprint']

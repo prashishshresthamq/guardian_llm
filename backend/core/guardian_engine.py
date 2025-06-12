@@ -10,6 +10,12 @@ from datetime import datetime
 import nltk
 from textblob import TextBlob
 import numpy as np
+from core.lora_adapter import LoRAAdapter, DomainSpecificAnalyzer
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Import local modules
 from models.schemas import (
@@ -43,6 +49,11 @@ class GuardianEngine:
         self.risk_analyzer = RiskAnalyzer()
         self.is_initialized = True
         
+        # Initialize LoRA adapter
+        self.lora_adapter = None
+        self.domain_analyzer = DomainSpecificAnalyzer()
+        self._initialize_lora()
+        
     def get_status(self) -> Dict[str, Any]:
         """Get engine status"""
         return {
@@ -57,14 +68,7 @@ class GuardianEngine:
     
     def analyze_text(self, text: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Perform complete text analysis
-        
-        Args:
-            text: Text to analyze
-            options: Optional analysis configuration
-            
-        Returns:
-            Dictionary containing analysis results
+        Perform complete text analysis with LoRA enhancement
         """
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
@@ -72,23 +76,26 @@ class GuardianEngine:
         # Process text
         processed_text = self.text_processor.process(text)
         
+        # Detect domain
+        domain = self._detect_domain(text)
+        
         # Perform risk analysis
         risk_analysis = self._analyze_risks(processed_text)
         
-        # Perform sentiment analysis
+        # Enhance with LoRA if available
+        if self.lora_adapter and domain:
+            lora_risks = self.domain_analyzer.analyze_with_domain_adaptation(text, domain)
+            risk_analysis = self._merge_risk_scores(risk_analysis, lora_risks)
+        
+        # Rest of the analysis...
         sentiment_analysis = self._analyze_sentiment(text)
-        
-        # Generate statistics
         statistics = self._generate_statistics(processed_text, risk_analysis)
-        
-        # Generate risk assessments
         risk_assessments = self._generate_risk_assessments(processed_text, risk_analysis)
-        
-        # Generate recommendations
         recommendations = self._generate_recommendations(risk_analysis, sentiment_analysis)
         
         return {
             'text': text,
+            'domain': domain,
             'processed_text': processed_text,
             'risk_analysis': risk_analysis,
             'sentiment': sentiment_analysis,
@@ -97,7 +104,25 @@ class GuardianEngine:
             'recommendations': recommendations,
             'timestamp': datetime.utcnow().isoformat()
         }
-    
+    def _initialize_lora(self):
+        """Initialize LoRA adapter with pre-trained weights if available"""
+        try:
+            self.lora_adapter = LoRAAdapter()
+            # Load pre-trained domain adapters if they exist
+            import os
+            adapter_dir = os.path.join(self.config.MODEL_CACHE_DIR, 'lora_adapters')
+            if os.path.exists(adapter_dir):
+                for domain in ['biomedical', 'legal', 'technical']:
+                    adapter_path = os.path.join(adapter_dir, f'lora_adapter_{domain}.pt')
+                    if os.path.exists(adapter_path):
+                        adapter = LoRAAdapter()
+                        adapter.load_adapter(adapter_path)
+                        self.domain_analyzer.adapters[domain] = adapter
+            logger.info("LoRA adapters initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize LoRA: {e}")
+            self.lora_adapter = None
+            
     def _analyze_risks(self, processed_text: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze text for various risk factors"""
         
@@ -348,3 +373,42 @@ class GuardianEngine:
             })
         
         return recommendations
+    
+    def _detect_domain(self, text: str) -> str:
+        """Detect the domain of the research paper"""
+        domain_keywords = {
+            'biomedical': ['patient', 'medical', 'clinical', 'disease', 'treatment', 'diagnosis'],
+            'legal': ['law', 'legal', 'court', 'justice', 'regulation', 'compliance'],
+            'financial': ['financial', 'banking', 'investment', 'market', 'trading'],
+            'technical': ['algorithm', 'model', 'system', 'architecture', 'implementation'],
+            'social': ['social', 'society', 'community', 'behavior', 'interaction']
+        }
+        
+        text_lower = text.lower()
+        domain_scores = {}
+        
+        for domain, keywords in domain_keywords.items():
+            score = sum(1 for keyword in keywords if keyword in text_lower)
+            domain_scores[domain] = score
+        
+        # Return domain with highest score
+        if domain_scores:
+            return max(domain_scores, key=domain_scores.get)
+        return 'general'
+    
+    def _merge_risk_scores(self, traditional_risks: Dict, lora_risks: Dict) -> Dict:
+        """Merge traditional and LoRA-based risk scores"""
+        merged = traditional_risks.copy()
+        
+        if 'risk_categories' not in merged:
+            merged['risk_categories'] = {}
+        
+        # Weight: 60% traditional, 40% LoRA
+        for category, lora_score in lora_risks.items():
+            if category in merged['risk_categories']:
+                traditional_score = merged['risk_categories'][category]
+                merged['risk_categories'][category] = 0.6 * traditional_score + 0.4 * lora_score
+            else:
+                merged['risk_categories'][category] = lora_score
+        
+        return merged

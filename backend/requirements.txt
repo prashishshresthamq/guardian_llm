@@ -32,3 +32,11 @@ python-dateutil==2.8.2
 
 # Production server (optional)
 gunicorn==21.2.0
+
+
+# LoRA dependencies
+torch>=2.0.0
+transformers>=4.30.0
+accelerate>=0.20.0
+peft>=0.4.0  # Hugging Face's Parameter-Efficient Fine-Tuning library
+einops>=0.6.0
