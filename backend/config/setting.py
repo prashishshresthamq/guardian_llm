@@ -69,7 +69,11 @@ class Config:
             'upset', 'concern', 'worry', 'doubt'
         ]
     }
-    
+     # Chain of Thought settings
+    COT_ENABLED = os.environ.get('COT_ENABLED', 'true').lower() == 'true'
+    COT_DEFAULT_MODE = os.environ.get('COT_DEFAULT_MODE', 'enhanced')  # enhanced, standalone
+    COT_MAX_REASONING_STEPS = int(os.environ.get('COT_MAX_REASONING_STEPS', '6'))
+    COT_CONFIDENCE_THRESHOLD = float(os.environ.get('COT_CONFIDENCE_THRESHOLD', '0.7'))
     # Sentiment Analysis Settings
     SENTIMENT_THRESHOLD = {
         'positive': 0.6,

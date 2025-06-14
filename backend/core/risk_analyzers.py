@@ -231,24 +231,39 @@ class RiskAnalyzer:
         
         return results
     
-    def get_risk_evidence(self, text: str, category: RiskCategory) -> List[str]:
-        """Get specific evidence for a risk category"""
+    def get_risk_evidence(self, text: str, category: str) -> List[str]:
+        """Get evidence for a specific risk category"""
         evidence = []
         text_lower = text.lower()
         
-        if category in self.keyword_analyzer.risk_keywords:
-            keywords = self.keyword_analyzer.risk_keywords[category]
+        # Category-specific keywords
+        category_keywords = {
+            'bias_fairness': ['bias', 'unfair', 'discrimination', 'prejudice'],
+            'privacy_data': ['privacy', 'personal data', 'consent', 'collection'],
+            'safety_security': ['safety', 'security', 'vulnerability', 'risk'],
+            # ... add more categories
+        }
+        
+        if category in category_keywords:
+            keywords = category_keywords[category]
             for keyword in keywords:
                 if keyword in text_lower:
                     # Find context around keyword
-                    index = text_lower.find(keyword)
-                    start = max(0, index - 30)
-                    end = min(len(text), index + len(keyword) + 30)
-                    context = text[start:end]
-                    if start > 0:
-                        context = "..." + context
-                    if end < len(text):
-                        context = context + "..."
-                    evidence.append(f"Found '{keyword}': {context}")
+                    context = self._extract_context_around_keyword(text, keyword)
+                    if context:
+                        evidence.append(f"Detected '{keyword}': {context}")
         
-        return evidence
+        return evidence[:3]  # Return top 3 pieces of evidence
+    
+    def _extract_context_around_keyword(self, text: str, keyword: str, window: int = 50) -> str:
+        """Extract context around a keyword"""
+        text_lower = text.lower()
+        keyword_lower = keyword.lower()
+        
+        index = text_lower.find(keyword_lower)
+        if index != -1:
+            start = max(0, index - window)
+            end = min(len(text), index + len(keyword) + window)
+            context = text[start:end].strip()
+            return context
+        return ""

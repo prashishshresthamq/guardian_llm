@@ -6,10 +6,21 @@ Defines all API endpoints for the Guardian LLM service
 
 from flask import Blueprint, request, jsonify, current_app
 from flask_cors import cross_origin
+from flask import request, jsonify
 from datetime import datetime
 import json
 import traceback
 from sqlalchemy.exc import SQLAlchemyError
+
+from functools import wraps
+from core.guardian_engine import GuardianEngine
+from core.lora_adapter import LoRAAdapter  # Add this import
+# Create blueprint
+api_blueprint = Blueprint('api', __name__)
+
+import time
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 # Fix the imports - use relative imports
 from models.database import db, Analysis, User, RiskDetection, Feedback, Paper, RiskResult
@@ -26,12 +37,44 @@ from models.schemas import (
     Recommendation,
     ErrorResponse
 )
+rate_limit_storage = defaultdict(list)
+RATE_LIMIT_REQUESTS = 10  # requests per window
+RATE_LIMIT_WINDOW = 60   # window in seconds
+
 from core.guardian_engine import GuardianEngine
 # Create blueprint
 api_blueprint = Blueprint('api', __name__)
 
 # Initialize Guardian Engine
 guardian_engine = GuardianEngine()
+
+def rate_limit(f):
+    """Rate limiting decorator"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get client IP
+        client_ip = request.remote_addr
+        current_time = datetime.utcnow()
+        
+        # Clean old requests
+        cutoff_time = current_time - timedelta(seconds=RATE_LIMIT_WINDOW)
+        rate_limit_storage[client_ip] = [
+            req_time for req_time in rate_limit_storage[client_ip] 
+            if req_time > cutoff_time
+        ]
+        
+        # Check rate limit
+        if len(rate_limit_storage[client_ip]) >= RATE_LIMIT_REQUESTS:
+            return jsonify({
+                'error': 'Rate limit exceeded',
+                'message': f'Maximum {RATE_LIMIT_REQUESTS} requests per {RATE_LIMIT_WINDOW} seconds'
+            }), 429
+        
+        # Add current request
+        rate_limit_storage[client_ip].append(current_time)
+        
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Error handlers
 @api_blueprint.errorhandler(400)
@@ -95,7 +138,105 @@ def analyze_text():
             'error': 'Internal server error',
             'message': str(e)
         }), 500
+@api_blueprint.route('/analyze/cot', methods=['POST'])
+@cross_origin()
+@rate_limit
+def analyze_with_cot():
+    """Analyze text with detailed Chain of Thought reasoning"""
+    try:
+        data = request.get_json()
+        text = data.get('text', '').strip()
+        
+        if not text:
+            return jsonify({'error': 'Text is required'}), 400
+        
+        # Get options from request
+        options = data.get('options', {})
+        options['enable_cot'] = True
+        options['cot_mode'] = options.get('cot_mode', 'enhanced')
+        
+        # Get guardian engine
+        guardian_engine = current_app.config.get('guardian_engine')
+        if not guardian_engine:
+            return jsonify({'error': 'Analysis engine not available'}), 503
+        
+        # Perform analysis with CoT
+        if options.get('cot_mode') == 'standalone':
+            result = guardian_engine.analyze_text_with_detailed_cot(text, options)
+        else:
+            result = guardian_engine.analyze_text(text, options)
+        
+        # Format response for frontend compatibility
+        response = {
+            'status': 'success',
+            'analysis': {
+                'text': result.get('text', text),
+                'risk_analysis': result.get('risk_analysis', {}),
+                'risk_assessments': result.get('risk_assessments', []),
+                'recommendations': result.get('recommendations', []),
+                'overall_risk_score': result.get('risk_analysis', {}).get('overall_risk', {}).get('score', 0),
+                'chain_of_thought': result.get('chain_of_thought', {}),
+                'detailed_cot': result.get('detailed_cot', {}),
+                'processing_time': result.get('processing_time', 0)
+            },
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        current_app.logger.error(f"CoT analysis error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Analysis failed',
+            'details': str(e)
+        }), 500
 
+@api_blueprint.route('/api/extract-text', methods=['POST'])
+@cross_origin()
+def extract_text_from_file():
+    """Extract text from uploaded file"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'error': 'No file selected'}), 400
+        
+        # Read file content
+        content = ""
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        
+        if file_ext == 'txt':
+            content = file.read().decode('utf-8')
+        elif file_ext == 'pdf':
+            try:
+                import PyPDF2
+                pdf_reader = PyPDF2.PdfReader(file)
+                for page in pdf_reader.pages:
+                    content += page.extract_text() + "\n"
+            except:
+                return jsonify({'status': 'error', 'error': 'PDF extraction failed'}), 500
+        elif file_ext in ['doc', 'docx']:
+            try:
+                from docx import Document
+                doc = Document(file)
+                for paragraph in doc.paragraphs:
+                    content += paragraph.text + '\n'
+            except:
+                return jsonify({'status': 'error', 'error': 'DOCX extraction failed'}), 500
+        else:
+            return jsonify({'status': 'error', 'error': 'Unsupported file type'}), 400
+        
+        return jsonify({
+            'status': 'success',
+            'text': content.strip()
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+    
 def analyze_paper(data):
     """Analyze research paper format"""
     try:
@@ -258,7 +399,7 @@ def analyze_paper(data):
                     recommendations=json.dumps(recommendations)
                 )
                 db.session.add(risk_result)
-            
+            current_app.logger.info(f"Paper saved with ID: {paper_id}, Title: {title}")
             db.session.commit()
             
             # Prepare response

@@ -179,24 +179,16 @@ class TextProcessor:
             return text.lower().split()
     
     def get_sentences(self, text: str) -> List[str]:
-        """
-        Split text into sentences
-        
-        Args:
-            text: Text to split
-            
-        Returns:
-            List of sentences
-        """
+        """Extract sentences from text"""
         try:
-            sentences = sent_tokenize(text)
-            # Filter out very short sentences
-            sentences = [s for s in sentences if len(s.split()) > 2]
-            return sentences
+            import nltk
+            sentences = nltk.sent_tokenize(text)
+            return [s.strip() for s in sentences if s.strip()]
         except:
-            # Fallback to simple split
+            # Fallback to simple sentence splitting
             sentences = re.split(r'[.!?]+', text)
-            return [s.strip() for s in sentences if s.strip() and len(s.split()) > 2]
+            return [s.strip() for s in sentences if s.strip()]
+        
     
     def remove_stopwords(self, tokens: List[str]) -> List[str]:
         """

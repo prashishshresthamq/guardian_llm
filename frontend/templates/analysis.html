@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Analysis Results - Guardian LLM{% endblock %}
+{% block title %}Text Analysis - Guardian LLM{% endblock %}
 
-{% block description %}View detailed ethical risk analysis results for your AI research paper with comprehensive recommendations and insights.{% endblock %}
+{% block description %}Analyze text content for ethical risks using advanced AI including Chain of Thought reasoning, semantic analysis, and domain-specific risk detection.{% endblock %}
 
 {% block body_class %}analysis-page{% endblock %}
 
@@ -11,7 +11,7 @@
         <a href="{{ url_for('dashboard') }}">Dashboard</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
-        Analysis Results
+        Text Analysis
     </li>
 {% endblock %}
 
@@ -20,6 +20,13 @@
         /* Analysis Page Specific Styles */
         .analysis-page {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .analysis-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
         }
         
         .analysis-header {
@@ -43,39 +50,267 @@
             background: var(--gradient-primary);
         }
         
-        .analysis-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-6);
-            margin-bottom: var(--space-6);
-        }
-        
-        .meta-item {
-            text-align: center;
-            padding: var(--space-4);
-            background: var(--light-color);
-            border-radius: var(--radius-lg);
+        .input-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-color);
         }
         
-        .meta-label {
-            font-size: var(--font-size-sm);
-            color: var(--muted-color);
-            font-weight: var(--font-weight-medium);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-2);
+        .form-group {
+            margin-bottom: var(--space-6);
         }
         
-        .meta-value {
-            font-size: var(--font-size-xl);
+        .form-label {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark-color);
+            margin-bottom: var(--space-3);
+            display: block;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: var(--space-4);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            transition: all var(--transition-normal);
+            background: white;
+            color: var(--dark-color);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        .textarea-large {
+            min-height: 200px;
+            resize: vertical;
+            font-family: var(--font-family);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+        
+        .option-card {
+            background: var(--light-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+        
+        .option-card:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .option-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .option-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: var(--space-2);
+            right: var(--space-2);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: var(--font-size-lg);
+        }
+        
+        .option-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark-color);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .option-description {
+            font-size: var(--font-size-sm);
+            color: var(--muted-color);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .option-badge {
+            display: inline-block;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: var(--font-size-xs);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: auto;
+        }
+        
+        .cot-options {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: none;
+        }
+        
+        .cot-options.visible {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn {
+            padding: var(--space-4) var(--space-8);
+            border-radius: var(--radius-lg);
+            font-weight: var(--font-weight-semibold);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            transition: all var(--transition-normal);
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            background: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-lg {
+            padding: var(--space-5) var(--space-10);
+            font-size: var(--font-size-lg);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .results-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+        
+        .results-section.visible {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .results-title {
+            font-size: var(--font-size-2xl);
             font-weight: var(--font-weight-bold);
             color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
         }
         
         .overall-score {
             text-align: center;
-            margin: var(--space-8) 0;
+            margin: var(--space-6) 0;
         }
         
         .score-circle {
@@ -150,69 +385,11 @@
             border: 1px solid rgba(220, 53, 69, 0.3);
         }
         
-        .analysis-actions {
-            display: flex;
-            gap: var(--space-4);
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: var(--space-6);
-        }
-        
-        .btn {
-            padding: var(--space-3) var(--space-6);
-            border-radius: var(--radius-lg);
-            font-weight: var(--font-weight-semibold);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            transition: all var(--transition-normal);
-            border: 2px solid transparent;
-            cursor: pointer;
-            font-size: var(--font-size-base);
-        }
-        
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-success {
-            background: var(--gradient-success);
-            color: white;
-        }
-        
-        .btn-warning {
-            background: var(--gradient-warning);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: var(--gradient-danger);
-            color: white;
-        }
-        
         .risk-categories {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: var(--space-6);
-            margin-bottom: var(--space-8);
+            margin: var(--space-8) 0;
         }
         
         .risk-card {
@@ -250,10 +427,6 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: var(--space-5);
-        }
-        
-        .risk-category-info {
-            flex: 1;
         }
         
         .risk-category-name {
@@ -302,331 +475,346 @@
             color: var(--muted-color);
         }
         
-        .risk-explanation {
-            color: var(--muted-color);
-            line-height: var(--line-height-relaxed);
-            margin-bottom: var(--space-5);
-            font-size: var(--font-size-base);
+        .cot-section {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin: var(--space-8) 0;
+            display: none;
         }
         
-        .evidence-section {
-            margin-bottom: var(--space-5);
+        .cot-section.visible {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
         }
         
-        .section-title {
-            font-size: var(--font-size-base);
+        .cot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+        
+        .cot-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .cot-badge {
+            background: var(--gradient-primary);
+            color: white;
+            font-size: var(--font-size-xs);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .reasoning-steps {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+        
+        .reasoning-step {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-color);
+            position: relative;
+        }
+        
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+        }
+        
+        .step-title {
+            font-size: var(--font-size-lg);
             font-weight: var(--font-weight-semibold);
             color: var(--dark-color);
-            margin-bottom: var(--space-3);
             display: flex;
             align-items: center;
             gap: var(--space-2);
         }
         
-        .evidence-list {
-            list-style: none;
-            padding: 0;
+        .step-number {
+            background: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
         }
         
-        .evidence-item {
-            padding: var(--space-2) 0;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            position: relative;
-            padding-left: var(--space-5);
+        .step-confidence {
             font-size: var(--font-size-sm);
             color: var(--muted-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+        
+        .confidence-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .step-content {
+            color: var(--muted-color);
             line-height: var(--line-height-relaxed);
+            margin-bottom: var(--space-4);
         }
         
-        .evidence-item:last-child {
-            border-bottom: none;
+        .step-findings {
+            background: var(--light-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
         }
         
-        .evidence-item::before {
+        .findings-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark-color);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .findings-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .finding-item {
+            padding: var(--space-1) 0;
+            color: var(--muted-color);
+            font-size: var(--font-size-sm);
+            position: relative;
+            padding-left: var(--space-4);
+        }
+        
+        .finding-item::before {
             content: '•';
             position: absolute;
-            left: var(--space-3);
+            left: 0;
             color: var(--primary-color);
-            font-weight: var(--font-weight-bold);
-            font-size: var(--font-size-lg);
+            font-weight: bold;
         }
         
         .recommendations-section {
             background: var(--light-color);
             border-radius: var(--radius-lg);
-            padding: var(--space-4);
-            border: 1px solid var(--border-color);
+            padding: var(--space-6);
+            margin-top: var(--space-8);
         }
         
-        .recommendation-item {
-            padding: var(--space-2) 0;
-            padding-left: var(--space-5);
-            position: relative;
-            font-size: var(--font-size-sm);
-            line-height: var(--line-height-relaxed);
-            color: var(--dark-color);
-        }
-        
-        .recommendation-item::before {
-            content: '→';
-            position: absolute;
-            left: var(--space-3);
-            color: var(--info-color);
-            font-weight: var(--font-weight-bold);
-            font-size: var(--font-size-base);
-        }
-        
-        .summary-section {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            margin-bottom: var(--space-8);
-        }
-        
-        .summary-header {
-            text-align: center;
-            margin-bottom: var(--space-6);
-        }
-        
-        .summary-title {
-            font-size: var(--font-size-3xl);
+        .recommendations-title {
+            font-size: var(--font-size-xl);
             font-weight: var(--font-weight-bold);
             color: var(--dark-color);
-            margin-bottom: var(--space-3);
-        }
-        
-        .summary-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-5);
-            margin-bottom: var(--space-6);
-        }
-        
-        .stat-card {
-            text-align: center;
-            padding: var(--space-5);
-            background: var(--light-color);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            transition: all var(--transition-normal);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .stat-icon {
-            font-size: var(--font-size-2xl);
-            margin-bottom: var(--space-3);
-            color: var(--primary-color);
-        }
-        
-        .stat-value {
-            font-size: var(--font-size-2xl);
-            font-weight: var(--font-weight-bold);
-            color: var(--dark-color);
-            margin-bottom: var(--space-1);
-        }
-        
-        .stat-label {
-            font-size: var(--font-size-sm);
-            color: var(--muted-color);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: var(--font-weight-medium);
-        }
-        
-        .key-insights {
-            margin-top: var(--space-6);
-        }
-        
-        .insight-item {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: var(--space-4);
             margin-bottom: var(--space-4);
-            border-left: 4px solid var(--primary-color);
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .insight-title {
-            font-weight: var(--font-weight-semibold);
-            color: var(--dark-color);
-            margin-bottom: var(--space-2);
-        }
-        
-        .insight-text {
-            color: var(--muted-color);
-            line-height: var(--line-height-relaxed);
-        }
-        
-        .priority-alerts {
-            margin-bottom: var(--space-8);
-        }
-        
-        .alert {
-            padding: var(--space-4);
-            border-radius: var(--radius-lg);
-            margin-bottom: var(--space-4);
-            border: 1px solid;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: var(--space-3);
         }
         
-        .alert-critical {
-            background: rgba(220, 53, 69, 0.05);
-            border-color: rgba(220, 53, 69, 0.2);
-            color: #721c24;
+        .recommendation-item {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            border-left: 4px solid var(--info-color);
+            box-shadow: var(--shadow-sm);
         }
         
-        .alert-warning {
-            background: rgba(255, 193, 7, 0.05);
-            border-color: rgba(255, 193, 7, 0.2);
-            color: #856404;
-        }
-        
-        .alert-info {
-            background: rgba(23, 162, 184, 0.05);
-            border-color: rgba(23, 162, 184, 0.2);
-            color: #0c5460;
-        }
-        
-        .alert-icon {
-            font-size: var(--font-size-xl);
-            margin-top: var(--space-1);
-        }
-        
-        .alert-content {
-            flex: 1;
-        }
-        
-        .alert-title {
-            font-weight: var(--font-weight-semibold);
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: var(--space-2);
         }
         
-        .timeline-section {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            margin-bottom: var(--space-8);
-        }
-        
-        .timeline {
-            position: relative;
-            padding-left: var(--space-8);
-        }
-        
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: var(--space-4);
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border-color);
-        }
-        
-        .timeline-item {
-            position: relative;
-            margin-bottom: var(--space-6);
-            padding-bottom: var(--space-6);
-        }
-        
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: calc(-1 * var(--space-8) + var(--space-3));
-            top: var(--space-1);
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            border: 2px solid white;
-            box-shadow: 0 0 0 2px var(--primary-color);
-        }
-        
-        .timeline-time {
-            font-size: var(--font-size-sm);
-            color: var(--muted-color);
-            font-weight: var(--font-weight-medium);
-        }
-        
-        .timeline-title {
+        .recommendation-type {
             font-weight: var(--font-weight-semibold);
             color: var(--dark-color);
-            margin: var(--space-1) 0 var(--space-2);
+            font-size: var(--font-size-base);
         }
         
-        .timeline-description {
+        .priority-badge {
+            font-size: var(--font-size-xs);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .priority-badge.critical {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .priority-badge.high {
+            background: rgba(253, 126, 20, 0.1);
+            color: #fd7e14;
+        }
+        
+        .priority-badge.medium {
+            background: rgba(255, 193, 7, 0.1);
+            color: #e67e22;
+        }
+        
+        .priority-badge.low {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+        
+        .recommendation-message {
             color: var(--muted-color);
             line-height: var(--line-height-relaxed);
         }
         
-        .export-section {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: var(--space-6);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-        
-        .export-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        .actions-section {
+            display: flex;
             gap: var(--space-4);
-            margin-top: var(--space-6);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--space-8);
+            padding-top: var(--space-6);
+            border-top: 2px solid var(--border-color);
         }
         
-        .export-option {
-            padding: var(--space-4);
-            border: 2px solid var(--border-color);
+        .character-counter {
+            text-align: right;
+            font-size: var(--font-size-sm);
+            color: var(--muted-color);
+            margin-top: var(--space-2);
+        }
+        
+        .character-counter.warning {
+            color: var(--warning-color);
+        }
+        
+        .character-counter.danger {
+            color: var(--danger-color);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
             border-radius: var(--radius-lg);
-            cursor: pointer;
+            padding: var(--space-8);
+            text-align: center;
             transition: all var(--transition-normal);
-            text-decoration: none;
-            color: var(--dark-color);
+            cursor: pointer;
+            margin-bottom: var(--space-4);
         }
         
-        .export-option:hover {
+        .upload-area:hover {
             border-color: var(--primary-color);
             background: rgba(102, 126, 234, 0.05);
-            transform: translateY(-2px);
         }
         
-        .export-icon {
-            font-size: var(--font-size-2xl);
-            color: var(--primary-color);
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: var(--font-size-4xl);
+            color: var(--muted-color);
+            margin-bottom: var(--space-3);
+        }
+        
+        .upload-text {
+            color: var(--muted-color);
+            font-size: var(--font-size-lg);
             margin-bottom: var(--space-2);
         }
         
-        .export-title {
-            font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--space-1);
+        .upload-hint {
+            color: var(--muted-color);
+            font-size: var(--font-size-sm);
         }
         
-        .export-description {
-            font-size: var(--font-size-sm);
+        .file-input {
+            display: none;
+        }
+        
+        .tab-navigation {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--space-6);
+            overflow-x: auto;
+        }
+        
+        .tab-button {
+            padding: var(--space-3) var(--space-6);
+            border: none;
+            background: none;
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
             color: var(--muted-color);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab-button:hover {
+            color: var(--primary-color);
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
         }
         
         /* Responsive Design */
         @media (max-width: 768px) {
-            .analysis-meta {
-                grid-template-columns: repeat(2, 1fr);
-                gap: var(--space-4);
+            .analysis-container {
+                padding: var(--space-4);
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
             }
             
             .risk-categories {
                 grid-template-columns: 1fr;
-                gap: var(--space-4);
             }
             
             .risk-header {
@@ -638,26 +826,36 @@
                 text-align: left;
             }
             
-            .analysis-actions {
+            .actions-section {
                 flex-direction: column;
                 align-items: stretch;
             }
             
-            .summary-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: var(--space-3);
+            .btn {
+                justify-content: center;
             }
             
-            .export-options {
-                grid-template-columns: 1fr;
+            .tab-navigation {
+                justify-content: flex-start;
+            }
+            
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-2);
             }
         }
         
         /* Print Styles */
         @media print {
-            .analysis-actions,
-            .export-section {
+            .input-section,
+            .actions-section {
                 display: none;
+            }
+            
+            .results-section {
+                box-shadow: none;
+                border: 1px solid #ccc;
             }
             
             .risk-card {
@@ -665,840 +863,1953 @@
                 margin-bottom: var(--space-4);
             }
             
-            .summary-section {
+            .cot-section {
                 break-inside: avoid;
             }
         }
         
-        /* Loading States */
-        .loading-card {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: var(--space-6);
-            margin-bottom: var(--space-6);
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .analysis-page {
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            }
         }
-        
-        .loading-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-4);
-        }
-        
-        .loading-title {
-            height: 24px;
-            background: var(--border-color);
-            border-radius: var(--radius-sm);
-            width: 200px;
-        }
-        
-        .loading-score {
-            height: 32px;
-            background: var(--border-color);
-            border-radius: var(--radius-sm);
-            width: 80px;
-        }
-        
-        .loading-content {
-            height: 60px;
-            background: var(--border-color);
-            border-radius: var(--radius-sm);
-            margin-bottom: var(--space-3);
-        }
-        
-        .loading-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-        }
-        
-        .loading-item {
-            height: 16px;
-            background: var(--border-color);
-            border-radius: var(--radius-sm);
-        }
-        
-        .loading-item:nth-child(1) { width: 90%; }
-        .loading-item:nth-child(2) { width: 80%; }
-        .loading-item:nth-child(3) { width: 85%; }
     </style>
 {% endblock %}
 
 {% block main %}
-    <div class="container">
-        <!-- Priority Alerts -->
-        <div class="priority-alerts" id="priorityAlerts">
-            <!-- Alerts will be populated by JavaScript -->
-        </div>
-
+    <div class="analysis-container">
         <!-- Analysis Header -->
-        <div class="analysis-header" id="analysisHeader">
-            <!-- Header content will be populated by JavaScript -->
-        </div>
-
-        <!-- Analysis Summary -->
-        <div class="summary-section" id="analysisSummary">
-            <!-- Summary content will be populated by JavaScript -->
-        </div>
-
-        <!-- Risk Categories -->
-        <div class="risk-categories" id="riskCategories">
-            <!-- Risk cards will be populated by JavaScript -->
-        </div>
-
-        <!-- Analysis Timeline -->
-        <div class="timeline-section" id="analysisTimeline" style="display: none;">
-            <h2 class="summary-title">
-                <i class="fas fa-history"></i>
-                Analysis Timeline
-            </h2>
-            <div class="timeline" id="timelineContent">
-                <!-- Timeline items will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Export & Actions -->
-        <div class="export-section">
-            <h2 class="summary-title">
-                <i class="fas fa-download"></i>
-                Export & Share Results
-            </h2>
-            <p style="color: var(--muted-color); margin-bottom: var(--space-6);">
-                Download your analysis results in various formats or share with your team.
-            </p>
-            
-            <div class="export-options">
-                <div class="export-option" onclick="exportAnalysis('pdf')">
-                    <div class="export-icon">
-                        <i class="fas fa-file-pdf"></i>
+        <div class="analysis-header">
+            <div style="text-align: center;">
+                <h1 style="font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-3); color: var(--dark-color);">
+                    <i class="fas fa-brain"></i>
+                    Advanced Text Analysis
+                </h1>
+                <p style="font-size: var(--font-size-xl); color: var(--muted-color); margin-bottom: var(--space-4);">
+                    Analyze text content for ethical risks using Chain of Thought reasoning, semantic analysis, and domain-specific detection
+                </p>
+                <div style="display: flex; justify-content: center; gap: var(--space-4); flex-wrap: wrap;">
+                    <div class="feature-badge">
+                        <i class="fas fa-link"></i>
+                        Chain of Thought
                     </div>
-                    <div class="export-title">PDF Report</div>
-                    <div class="export-description">Comprehensive analysis report</div>
-                </div>
-                
-                <div class="export-option" onclick="exportAnalysis('excel')">
-                    <div class="export-icon">
-                        <i class="fas fa-file-excel"></i>
+                    <div class="feature-badge">
+                        <i class="fas fa-vector-square"></i>
+                        Semantic Analysis
                     </div>
-                    <div class="export-title">Excel Data</div>
-                    <div class="export-description">Structured data for analysis</div>
-                </div>
-                
-                <div class="export-option" onclick="exportAnalysis('json')">
-                    <div class="export-icon">
-                        <i class="fas fa-code"></i>
+                    <div class="feature-badge">
+                        <i class="fas fa-microscope"></i>
+                        Domain-Specific
                     </div>
-                    <div class="export-title">JSON Data</div>
-                    <div class="export-description">Raw analysis data</div>
-                </div>
-                
-                <div class="export-option" onclick="shareAnalysis()">
-                    <div class="export-icon">
-                        <i class="fas fa-share-alt"></i>
+                    <div class="feature-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        Risk Detection
                     </div>
-                    <div class="export-title">Share Link</div>
-                    <div class="export-description">Generate shareable link</div>
                 </div>
             </div>
-            
-            <div class="analysis-actions" style="margin-top: var(--space-6);">
-                <button class="btn btn-primary" onclick="analyzeAnotherPaper()">
-                    <i class="fas fa-plus"></i>
-                    Analyze Another Paper
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="switchTab('text')" id="textTab">
+                    <i class="fas fa-keyboard"></i>
+                    Text Input
                 </button>
-                
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
-                    <i class="fas fa-chart-line"></i>
-                    View Dashboard
-                </a>
-                
-                <button class="btn btn-outline" onclick="window.print()">
-                    <i class="fas fa-print"></i>
-                    Print Results
+                <button class="tab-button" onclick="switchTab('file')" id="fileTab">
+                    <i class="fas fa-file-upload"></i>
+                    File Upload
                 </button>
             </div>
-        </div>
-    </div>
+
+         <!-- Text Input Tab -->
+           <div class="tab-content active" id="textContent">
+               <div class="form-group">
+                   <label for="textInput" class="form-label">
+                       <i class="fas fa-edit"></i>
+                       Enter Text for Analysis
+                   </label>
+                   <textarea 
+                       id="textInput" 
+                       class="form-control textarea-large" 
+                       placeholder="Paste your research paper abstract, AI system description, or any text content you want to analyze for ethical risks..."
+                       maxlength="10000"
+                       oninput="updateCharacterCount()"
+                   ></textarea>
+                   <div class="character-counter" id="charCounter">0 / 10,000 characters</div>
+               </div>
+           </div>
+
+           <!-- File Upload Tab -->
+           <div class="tab-content" id="fileContent">
+               <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                    ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                   <div class="upload-icon">
+                       <i class="fas fa-cloud-upload-alt"></i>
+                   </div>
+                   <div class="upload-text">Drop your file here or click to browse</div>
+                   <div class="upload-hint">Supports PDF, DOCX, TXT files up to 10MB</div>
+                   <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt,.doc" onchange="handleFileSelect(event)">
+               </div>
+               <div id="fileInfo" style="display: none; margin-top: var(--space-4);">
+                   <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--light-color); border-radius: var(--radius-lg);">
+                       <i class="fas fa-file" id="fileIcon"></i>
+                       <div>
+                           <div id="fileName" style="font-weight: var(--font-weight-semibold);"></div>
+                           <div id="fileSize" style="font-size: var(--font-size-sm); color: var(--muted-color);"></div>
+                       </div>
+                       <button onclick="clearFile()" style="margin-left: auto; background: none; border: none; color: var(--danger-color); cursor: pointer;">
+                           <i class="fas fa-times"></i>
+                       </button>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Analysis Options -->
+           <div class="form-group">
+               <label class="form-label">
+                   <i class="fas fa-cogs"></i>
+                   Analysis Mode
+               </label>
+               <div class="options-grid">
+                   <div class="option-card selected" data-mode="enhanced" onclick="selectAnalysisMode('enhanced')">
+                       <div class="option-title">
+                           <i class="fas fa-brain"></i>
+                           Enhanced Analysis
+                           <span class="option-badge">Recommended</span>
+                       </div>
+                       <div class="option-description">
+                           Combines traditional risk detection with Chain of Thought reasoning and semantic analysis for comprehensive results.
+                       </div>
+                   </div>
+                   
+                   <div class="option-card" data-mode="cot_only" onclick="selectAnalysisMode('cot_only')">
+                       <div class="option-title">
+                           <i class="fas fa-link"></i>
+                           Chain of Thought Only
+                       </div>
+                       <div class="option-description">
+                           Uses only systematic step-by-step reasoning to identify and assess ethical risks with detailed explanations.
+                       </div>
+                   </div>
+                   
+                   <div class="option-card" data-mode="standard" onclick="selectAnalysisMode('standard')">
+                       <div class="option-title">
+                           <i class="fas fa-search"></i>
+                           Standard Analysis
+                       </div>
+                       <div class="option-description">
+                           Traditional keyword and pattern-based risk detection with semantic enhancement but without CoT reasoning.
+                       </div>
+                   </div>
+               </div>
+               
+               <!-- Chain of Thought Options -->
+               <div class="cot-options" id="cotOptions">
+                   <h4 style="margin: 0 0 var(--space-3) 0; color: var(--dark-color);">
+                       <i class="fas fa-brain"></i>
+                       Chain of Thought Settings
+                   </h4>
+                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4);">
+                       <div>
+                           <label for="cotDepth" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                               Reasoning Depth
+                           </label>
+                           <select id="cotDepth" class="form-control form-select">
+                               <option value="standard">Standard (6 steps)</option>
+                               <option value="detailed">Detailed (8 steps)</option>
+                               <option value="comprehensive">Comprehensive (10+ steps)</option>
+                           </select>
+                       </div>
+                       <div>
+                           <label for="cotFocus" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                               Focus Areas
+                           </label>
+                           <select id="cotFocus" class="form-control form-select">
+                               <option value="all">All Categories</option>
+                               <option value="high_risk">High-Risk Areas Only</option>
+                               <option value="societal">Societal Impact Focus</option>
+                               <option value="technical">Technical Risks Focus</option>
+                           </select>
+                       </div>
+                   </div>
+                   <div style="margin-top: var(--space-3);">
+                       <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                           <input type="checkbox" id="enableExplanations" checked>
+                           <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                               Include detailed explanations for each reasoning step
+                           </span>
+                       </label>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Additional Options -->
+           <div class="form-group">
+               <label class="form-label">
+                   <i class="fas fa-sliders-h"></i>
+                   Additional Options
+               </label>
+               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-4);">
+                   <div>
+                       <label for="domainSelect" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                           Domain Context
+                       </label>
+                       <select id="domainSelect" class="form-control form-select">
+                           <option value="auto">Auto-detect</option>
+                           <option value="biomedical">Biomedical/Healthcare</option>
+                           <option value="legal">Legal/Regulatory</option>
+                           <option value="financial">Financial Services</option>
+                           <option value="technical">Technical/Engineering</option>
+                           <option value="social">Social Sciences</option>
+                           <option value="general">General Purpose</option>
+                       </select>
+                   </div>
+                   <div>
+                       <label for="sensitivityLevel" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                           Sensitivity Level
+                       </label>
+                       <select id="sensitivityLevel" class="form-control form-select">
+                           <option value="balanced">Balanced</option>
+                           <option value="conservative">Conservative (Higher sensitivity)</option>
+                           <option value="permissive">Permissive (Lower sensitivity)</option>
+                       </select>
+                   </div>
+               </div>
+               <div style="margin-top: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-4);">
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="includeRecommendations" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Generate mitigation recommendations
+                       </span>
+                   </label>
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="enableSemanticAnalysis" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Enable semantic risk detection
+                       </span>
+                   </label>
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="saveToDashboard" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Save results to dashboard
+                       </span>
+                   </label>
+               </div>
+           </div>
+
+           <!-- Analysis Actions -->
+           <div style="display: flex; gap: var(--space-4); justify-content: center; margin-top: var(--space-8);">
+               <button id="analyzeBtn" class="btn btn-primary btn-lg" onclick="performAnalysis()">
+                   <i class="fas fa-play"></i>
+                   <span id="analyzeBtnText">Start Analysis</span>
+                   <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+               </button>
+               <button class="btn btn-outline" onclick="clearAnalysis()">
+                   <i class="fas fa-trash"></i>
+                   Clear
+               </button>
+               <button class="btn btn-outline" onclick="loadExample()">
+                   <i class="fas fa-lightbulb"></i>
+                   Load Example
+               </button>
+           </div>
+       </div>
+
+       <!-- Results Section -->
+       <div class="results-section" id="resultsSection">
+           <div class="results-header">
+               <div class="results-title">
+                   <i class="fas fa-chart-bar"></i>
+                   Analysis Results
+               </div>
+               <div style="display: flex; gap: var(--space-3);">
+                   <button class="btn btn-outline" onclick="exportResults('pdf')">
+                       <i class="fas fa-file-pdf"></i>
+                       Export PDF
+                   </button>
+                   <button class="btn btn-outline" onclick="shareResults()">
+                       <i class="fas fa-share-alt"></i>
+                       Share
+                   </button>
+               </div>
+           </div>
+
+           <!-- Overall Score -->
+           <div class="overall-score" id="overallScore">
+               <!-- Will be populated by JavaScript -->
+           </div>
+
+           <!-- Risk Categories -->
+           <div class="risk-categories" id="riskCategories">
+               <!-- Will be populated by JavaScript -->
+           </div>
+
+           <!-- Chain of Thought Section -->
+           <div class="cot-section" id="cotSection">
+               <div class="cot-header">
+                   <div class="cot-title">
+                       <i class="fas fa-brain"></i>
+                       Chain of Thought Reasoning
+                       <span class="cot-badge">Advanced AI</span>
+                   </div>
+                   <div style="display: flex; gap: var(--space-2); align-items: center;">
+                       <span style="font-size: var(--font-size-sm); color: var(--muted-color);">Confidence:</span>
+                       <span id="cotConfidence" style="font-weight: var(--font-weight-semibold); color: var(--primary-color);">--</span>
+                   </div>
+               </div>
+               <div class="reasoning-steps" id="reasoningSteps">
+                   <!-- Will be populated by JavaScript -->
+               </div>
+           </div>
+
+           <!-- Recommendations Section -->
+           <div class="recommendations-section" id="recommendationsSection">
+               <div class="recommendations-title">
+                   <i class="fas fa-lightbulb"></i>
+                   Recommendations & Mitigation Strategies
+               </div>
+               <div id="recommendationsList">
+                   <!-- Will be populated by JavaScript -->
+               </div>
+           </div>
+
+           <!-- Actions Section -->
+           <div class="actions-section">
+               <button class="btn btn-primary" onclick="analyzeAnother()">
+                   <i class="fas fa-plus"></i>
+                   Analyze Another Text
+               </button>
+               <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                   <i class="fas fa-chart-line"></i>
+                   View Dashboard
+               </a>
+               <button class="btn btn-outline" onclick="window.print()">
+                   <i class="fas fa-print"></i>
+                   Print Results
+               </button>
+               <button class="btn btn-outline" onclick="saveToProject()">
+                   <i class="fas fa-bookmark"></i>
+                   Save to Project
+               </button>
+           </div>
+       </div>
+   </div>
+
+   <!-- Feature Badges Style -->
+   <style>
+       .feature-badge {
+           display: inline-flex;
+           align-items: center;
+           gap: var(--space-2);
+           background: rgba(102, 126, 234, 0.1);
+           color: var(--primary-color);
+           padding: var(--space-2) var(--space-4);
+           border-radius: var(--radius-full);
+           font-size: var(--font-size-sm);
+           font-weight: var(--font-weight-medium);
+           border: 1px solid rgba(102, 126, 234, 0.2);
+       }
+   </style>
 {% endblock %}
 
 {% block page_js %}
-    <script>
-        // Analysis data (populated from backend)
-        let analysisData = null;
-        let paperId = "{{ paper_id if paper_id else '' }}";
-        
-        // Initialize analysis page
-        document.addEventListener('DOMContentLoaded', function() {
-            if (paperId) {
-                loadAnalysisData(paperId);
-            } else {
-                // Check for data in URL or local storage
-                const urlParams = new URLSearchParams(window.location.search);
-                const dataParam = urlParams.get('data');
-                
-                if (dataParam) {
-                    try {
-                        analysisData = JSON.parse(decodeURIComponent(dataParam));
-                        displayAnalysis(analysisData);
-                    } catch (error) {
-                        showError('Invalid analysis data');
-                    }
-                } else {
-                    showError('No analysis data found');
-                }
-            }
-            
-            setupAnalysisInteractions();
-        });
-        
-        // Load analysis data from API
-        async function loadAnalysisData(id) {
-            try {
-                showGlobalLoading('Loading analysis results...');
-                
-                const response = await GuardianLLM.api.get(`/paper/${id}`);
-                analysisData = response;
-                
-                hideGlobalLoading();
-                displayAnalysis(analysisData);
-                
-            } catch (error) {
-                hideGlobalLoading();
-                showError('Failed to load analysis data: ' + error.message);
-            }
-        }
-        
-        // Display analysis results
-        function displayAnalysis(data) {
-            if (!data) {
-                showError('No analysis data available');
-                return;
-            }
-            
-            // Display priority alerts
-            displayPriorityAlerts(data);
-            
-            // Display header
-            displayAnalysisHeader(data);
-            
-            // Display summary
-            displayAnalysisSummary(data);
-            
-            // Display risk categories
-            displayRiskCategories(data.risk_assessments || []);
-            
-            // Display timeline if available
-            if (data.analysis_timeline) {
-                displayAnalysisTimeline(data.analysis_timeline);
-            }
-            
-            // Update page title
-            document.title = `Analysis: ${data.title} - Guardian LLM`;
-        }
-        
-        // Display priority alerts
-        function displayPriorityAlerts(data) {
-            const container = document.getElementById('priorityAlerts');
-            const alerts = [];
-            
-            // Check for critical risks
-            const criticalRisks = (data.risk_assessments || []).filter(r => r.level === 'critical');
-            if (criticalRisks.length > 0) {
-                alerts.push({
-                    type: 'critical',
-                    icon: 'exclamation-triangle',
-                    title: `${criticalRisks.length} Critical Risk${criticalRisks.length > 1 ? 's' : ''} Detected`,
-                    message: `Immediate attention required for: ${criticalRisks.map(r => formatCategoryName(r.category)).join(', ')}`
-                });
-            }
-            
-            // Check for high risks
-            const highRisks = (data.risk_assessments || []).filter(r => r.level === 'high');
-            if (highRisks.length > 0) {
-                alerts.push({
-                    type: 'warning',
-                    icon: 'exclamation-circle',
-                    title: `${highRisks.length} High Risk${highRisks.length > 1 ? 's' : ''} Found`,
-                    message: `Review recommended for: ${highRisks.map(r => formatCategoryName(r.category)).join(', ')}`
-                });
-            }
-            
-            // Check overall score
-            if (data.overall_risk_score >= 7.5) {
-                alerts.push({
-                    type: 'critical',
-                    icon: 'shield-alt',
-                    title: 'High Overall Risk Score',
-                    message: `Overall score of ${data.overall_risk_score}/10 requires comprehensive review and mitigation strategies.`
-                });
-            }
-            
-            // Success message for low risk
-            if (data.overall_risk_score < 2.5) {
-                alerts.push({
-                    type: 'info',
-                    icon: 'check-circle',
-                    title: 'Low Risk Assessment',
-                    message: 'This paper shows minimal ethical risks. Continue with standard review processes.'
-                });
-            }
-            
-            // Render alerts
-            if (alerts.length > 0) {
-                container.innerHTML = alerts.map(alert => `
-                    <div class="alert alert-${alert.type}">
-                        <div class="alert-icon">
-                            <i class="fas fa-${alert.icon}"></i>
-                        </div>
-                        <div class="alert-content">
-                            <div class="alert-title">${alert.title}</div>
-                            <div>${alert.message}</div>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                container.style.display = 'none';
-            }
-        }
-        
-        // Display analysis header
-        function displayAnalysisHeader(data) {
-            const container = document.getElementById('analysisHeader');
-            const overallLevel = getRiskLevel(data.overall_risk_score);
-            
-            container.innerHTML = `
-                <div style="text-align: center; margin-bottom: var(--space-6);">
-                    <h1 style="font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-3); color: var(--dark-color);">
-                        Analysis Results
-                    </h1>
-                    <div style="font-size: var(--font-size-xl); color: var(--muted-color); margin-bottom: var(--space-4);">
-                        ${GuardianLLM.utils.escapeHtml(data.title)}
-                    </div>
-                    ${data.authors && data.authors.length > 0 ? `
-                        <div style="font-size: var(--font-size-base); color: var(--muted-color);">
-                            Authors: ${data.authors.join(', ')}
-                        </div>
-                    ` : ''}
-                </div>
-                
-                <div class="analysis-meta">
-                    <div class="meta-item">
-                        <div class="meta-label">Paper ID</div>
-                        <div class="meta-value" style="font-size: var(--font-size-base); font-family: var(--font-mono);">
-                            ${data.paper_id}
-                        </div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Analysis Date</div>
-                        <div class="meta-value" style="font-size: var(--font-size-base);">
-                            ${GuardianLLM.utils.formatDate(data.upload_time || data.timestamp, { 
-                                month: 'short', 
-                                day: 'numeric', 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                            })}
-                        </div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Processing Time</div>
-                        <div class="meta-value" style="font-size: var(--font-size-base);">
-                            ${data.processing_time ? `${data.processing_time}s` : 'N/A'}
-                        </div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Analysis Status</div>
-                        <div class="meta-value" style="font-size: var(--font-size-base);">
-                            <span class="risk-level-badge ${data.status === 'completed' ? 'low' : 'medium'}">
-                                <i class="fas fa-${data.status === 'completed' ? 'check' : 'clock'}"></i>
-                                ${data.status || 'Completed'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="overall-score">
-                    <div class="score-circle ${overallLevel}">
-                        <div class="score-text">${data.overall_risk_score}</div>
-                    </div>
-                    <div class="score-label">Overall Risk Score</div>
-                    <div class="risk-level-badge ${overallLevel}">
-                        <i class="fas fa-${getIconForLevel(overallLevel)}"></i>
-                        ${overallLevel.toUpperCase()} RISK
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Display analysis summary
-        function displayAnalysisSummary(data) {
-            const container = document.getElementById('analysisSummary');
-            const assessments = data.risk_assessments || [];
-            
-            // Calculate statistics
-            const criticalCount = assessments.filter(a => a.level === 'critical').length;
-            const highCount = assessments.filter(a => a.level === 'high').length;
-            const totalRecommendations = assessments.reduce((sum, a) => sum + (a.recommendations ? a.recommendations.length : 0), 0);
-            const avgConfidence = assessments.length > 0 ? 
-                (assessments.reduce((sum, a) => sum + (a.confidence || 0), 0) / assessments.length * 100).toFixed(1) : 0;
-            
-            // Generate key insights
-            const insights = generateKeyInsights(data);
-            
-            container.innerHTML = `
-                <div class="summary-header">
-                    <h2 class="summary-title">
-                        <i class="fas fa-chart-bar"></i>
-                        Analysis Summary
-                    </h2>
-                    <p style="color: var(--muted-color); font-size: var(--font-size-lg);">
-                        Comprehensive ethical risk assessment across ${assessments.length} categories
-                    </p>
-                </div>
-                
-                <div class="summary-stats">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-value">${criticalCount}</div>
-                        <div class="stat-label">Critical Risks</div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <div class="stat-value">${highCount}</div>
-                        <div class="stat-label">High Risks</div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <div class="stat-value">${totalRecommendations}</div>
-                        <div class="stat-label">Recommendations</div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <div class="stat-value">${avgConfidence}%</div>
-                        <div class="stat-label">Avg Confidence</div>
-                    </div>
-                </div>
-                
-                <div class="key-insights">
-                    <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4); color: var(--dark-color);">
-                        <i class="fas fa-key"></i>
-                        Key Insights
-                    </h3>
-                    ${insights.map(insight => `
-                        <div class="insight-item">
-                            <div class="insight-title">${insight.title}</div>
-                            <div class="insight-text">${insight.text}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        // Display risk categories
-        function displayRiskCategories(assessments) {
-            const container = document.getElementById('riskCategories');
-            
-            if (!assessments || assessments.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: var(--space-8); color: var(--muted-color);">
-                        <i class="fas fa-inbox" style="font-size: var(--font-size-4xl); margin-bottom: var(--space-4); opacity: 0.3;"></i>
-                        <h3>No Risk Assessments Available</h3>
-                        <p>Unable to load risk assessment data.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Sort assessments by score (highest first)
-            const sortedAssessments = [...assessments].sort((a, b) => (b.score || 0) - (a.score || 0));
-            
-            container.innerHTML = sortedAssessments.map(assessment => `
-                <div class="risk-card ${assessment.level}" data-category="${assessment.category}">
-                    <div class="risk-header">
-                        <div class="risk-category-info">
-                            <div class="risk-category-name">
-                                <div class="risk-icon ${assessment.level}">
-                                    <i class="fas fa-${getIconForCategory(assessment.category)}"></i>
-                                </div>
-                                ${formatCategoryName(assessment.category)}
-                            </div>
-                        </div>
-                        <div class="risk-score-display">
-                            <div class="risk-score-number ${assessment.level}">
-                                ${assessment.score}/10
-                            </div>
-                            <div class="confidence-score">
-                                ${Math.round((assessment.confidence || 0) * 100)}% confidence
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="risk-explanation">
-                        ${assessment.explanation || 'No explanation available.'}
-                    </div>
-                    
-                    ${assessment.evidence && assessment.evidence.length > 0 ? `
-                        <div class="evidence-section">
-                            <div class="section-title">
-                                <i class="fas fa-search"></i>
-                                Evidence Found
-                            </div>
-                            <ul class="evidence-list">
-                                ${assessment.evidence.slice(0, 5).map(evidence => `
-                                    <li class="evidence-item">${GuardianLLM.utils.escapeHtml(evidence)}</li>
-                                `).join('')}
-                                ${assessment.evidence.length > 5 ? `
-                                    <li class="evidence-item" style="font-style: italic;">
-                                        +${assessment.evidence.length - 5} more evidence items...
-                                    </li>
-                                ` : ''}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    
-                    ${assessment.recommendations && assessment.recommendations.length > 0 ? `
-                        <div class="recommendations-section">
-                            <div class="section-title">
-                                <i class="fas fa-lightbulb"></i>
-                                Recommendations
-                            </div>
-                            ${assessment.recommendations.slice(0, 6).map(recommendation => `
-                                <div class="recommendation-item">${GuardianLLM.utils.escapeHtml(recommendation)}</div>
-                            `).join('')}
-                            ${assessment.recommendations.length > 6 ? `
-                                <div class="recommendation-item" style="font-style: italic;">
-                                    +${assessment.recommendations.length - 6} more recommendations available in detailed report...
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-        }
-        
-        // Display analysis timeline
-        function displayAnalysisTimeline(timeline) {
-            const container = document.getElementById('analysisTimeline');
-            const timelineContent = document.getElementById('timelineContent');
-            
-            if (!timeline || timeline.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            timelineContent.innerHTML = timeline.map(item => `
-                <div class="timeline-item">
-                    <div class="timeline-time">${GuardianLLM.utils.formatDate(item.timestamp)}</div>
-                    <div class="timeline-title">${item.title}</div>
-                    <div class="timeline-description">${item.description}</div>
-                </div>
-            `).join('');
-            
-            container.style.display = 'block';
-        }
-        
-        // Generate key insights
-        function generateKeyInsights(data) {
-            const insights = [];
-            const assessments = data.risk_assessments || [];
-            
-            // Highest risk category
-            const highestRisk = assessments.reduce((max, current) => 
-                (current.score || 0) > (max.score || 0) ? current : max, assessments[0]);
-            
-            if (highestRisk) {
-                insights.push({
-                    title: `Primary Concern: ${formatCategoryName(highestRisk.category)}`,
-                    text: `This category scored ${highestRisk.score}/10, indicating ${highestRisk.level} risk. Immediate attention recommended for mitigation strategies.`
-                });
-            }
-            
-            // Low risk areas
-            const lowRisks = assessments.filter(a => a.level === 'low');
-            if (lowRisks.length > 0) {
-                insights.push({
-                    title: `Strong Areas: ${lowRisks.length} Low-Risk Categories`,
-                    text: `${lowRisks.map(r => formatCategoryName(r.category)).join(', ')} show minimal ethical concerns, indicating good practices in these areas.`
-                });
-            }
-            
-            // Processing efficiency
-            if (data.processing_time) {
-                const efficiency = data.processing_time < 15 ? 'excellent' : 
-                                 data.processing_time < 30 ? 'good' : 'standard';
-                insights.push({
-                    title: `Analysis Efficiency: ${efficiency.charAt(0).toUpperCase() + efficiency.slice(1)}`,
-                    text: `Analysis completed in ${data.processing_time} seconds, demonstrating ${efficiency} system performance and rapid risk assessment capabilities.`
-                });
-            }
-            
-            // Overall assessment
-            if (data.overall_risk_score < 2.5) {
-                insights.push({
-                    title: 'Overall Assessment: Low Risk',
-                    text: 'This research demonstrates strong ethical considerations with minimal risks identified. Standard review processes are sufficient.'
-                });
-            } else if (data.overall_risk_score >= 7.5) {
-                insights.push({
-                    title: 'Overall Assessment: Requires Immediate Attention',
-                    text: 'High overall risk score indicates multiple ethical concerns requiring comprehensive review and mitigation before proceeding.'
-                });
-            }
-            
-            return insights;
-        }
-        
-        // Utility functions
-        function getRiskLevel(score) {
-            if (score < 2.5) return 'low';
-            if (score < 5.0) return 'medium';
-            if (score < 7.5) return 'high';
-            return 'critical';
-        }
-        
-        function getIconForLevel(level) {
-            const icons = {
-                'low': 'check-circle',
-                'medium': 'exclamation-circle',
-                'high': 'exclamation-triangle',
-                'critical': 'times-circle'
-            };
-            return icons[level] || 'question-circle';
-        }
-        
-        function getIconForCategory(category) {
-            const icons = {
-                'bias_fairness': 'balance-scale',
-                'privacy_data': 'shield-alt',
-                'safety_security': 'lock',
-                'dual_use': 'exclamation-triangle',
-                'societal_impact': 'users',
-                'transparency': 'eye'
-            };
-            return icons[category] || 'question-circle';
-        }
-        
-        function formatCategoryName(category) {
-            const names = {
-                'bias_fairness': 'Bias & Fairness',
-                'privacy_data': 'Privacy & Data',
-                'safety_security': 'Safety & Security',
-                'dual_use': 'Dual-Use Potential',
-                'societal_impact': 'Societal Impact',
-                'transparency': 'Transparency'
-            };
-            return names[category] || category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
-        
-        // Export functions
-        function exportAnalysis(format) {
-            if (!analysisData) {
-                showToast('No analysis data available to export', 'error');
-                return;
-            }
-            
-            showGlobalLoading(`Generating ${format.toUpperCase()} export...`);
-            
-            // Simulate export process
-            setTimeout(() => {
-                hideGlobalLoading();
-                
-                if (format === 'json') {
-                    // Download JSON data
-                    const dataStr = JSON.stringify(analysisData, null, 2);
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(dataBlob);
-                    
-                    GuardianLLM.utils.downloadFile(url, `guardian_analysis_${analysisData.paper_id}.json`);
-                    showToast('JSON export downloaded successfully', 'success');
-                } else {
-                    // For other formats, redirect to API endpoint
-                    window.open(`/api/paper/${analysisData.paper_id}/export?format=${format}`, '_blank');
-                    showToast(`${format.toUpperCase()} export initiated`, 'success');
-                }
-            }, 1500);
-        }
-        
-        function shareAnalysis() {
-            if (!analysisData) {
-                showToast('No analysis data available to share', 'error');
-                return;
-            }
-            
-            const shareUrl = `${window.location.origin}/analysis/${analysisData.paper_id}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: `Guardian LLM Analysis: ${analysisData.title}`,
-                    text: `Ethical risk analysis results for "${analysisData.title}" - Overall score: ${analysisData.overall_risk_score}/10`,
-                    url: shareUrl
-                }).then(() => {
-                    showToast('Analysis shared successfully', 'success');
-                }).catch(() => {
-                    // Fallback to copy link
-                    copyShareLink(shareUrl);
-                });
-            } else {
-                copyShareLink(shareUrl);
-            }
-        }
-        
-        function copyShareLink(url) {
-            GuardianLLM.utils.copyToClipboard(url);
-            showToast('Share link copied to clipboard', 'success');
-        }
-        
-        function analyzeAnotherPaper() {
-            if (confirm('Are you sure you want to analyze another paper? This will take you to the main analysis page.')) {
-                window.location.href = '/';
-            }
-        }
-        
-        // Setup interactions
-        function setupAnalysisInteractions() {
-            // Add click handlers for risk cards
-            document.addEventListener('click', function(e) {
-                const riskCard = e.target.closest('.risk-card');
-                if (riskCard) {
-                    const category = riskCard.dataset.category;
-                    if (category) {
-                        showCategoryDetails(category);
-                    }
-                }
-            });
-            
-            // Add keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                // Ctrl+S to download report
-                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                    e.preventDefault();
-                    exportAnalysis('pdf');
-                }
-                
-                // Ctrl+Shift+S to share
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
-                    e.preventDefault();
-                    shareAnalysis();
-                }
-            });
-        }
-        
-        function showCategoryDetails(category) {
-            const assessment = (analysisData.risk_assessments || []).find(a => a.category === category);
-            if (!assessment) return;
-            
-            const categoryName = formatCategoryName(category);
-            const evidenceList = assessment.evidence ? 
-                assessment.evidence.map(e => `<li>${GuardianLLM.utils.escapeHtml(e)}</li>`).join('') : 
-                '<li>No specific evidence found</li>';
-            
-            const recommendationsList = assessment.recommendations ? 
-                assessment.recommendations.map(r => `<li>${GuardianLLM.utils.escapeHtml(r)}</li>`).join('') : 
-                '<li>No specific recommendations available</li>';
-            
-            showModal(`${categoryName} - Detailed Analysis`, `
-                <div class="category-details">
-                    <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
-                        <div class="risk-icon ${assessment.level}" style="font-size: var(--font-size-2xl);">
-                            <i class="fas fa-${getIconForCategory(category)}"></i>
-                        </div>
-                        <div>
-                            <h3 style="margin: 0; color: var(--dark-color);">${categoryName}</h3>
-                            <div style="color: var(--muted-color);">
-                                Score: ${assessment.score}/10 | Confidence: ${Math.round((assessment.confidence || 0) * 100)}%
-                            </div>
-                        </div>
-                        <div class="risk-level-badge ${assessment.level}" style="margin-left: auto;">
-                            ${assessment.level.toUpperCase()}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: var(--space-4);">
-                        <h4 style="color: var(--dark-color); margin-bottom: var(--space-2);">Analysis</h4>
-                        <p style="color: var(--muted-color); line-height: var(--line-height-relaxed);">
-                            ${assessment.explanation}
-                        </p>
-                    </div>
-                    
-                    <div style="margin-bottom: var(--space-4);">
-                        <h4 style="color: var(--dark-color); margin-bottom: var(--space-2);">Evidence</h4>
-                        <ul style="margin: 0; padding-left: var(--space-4); color: var(--muted-color);">
-                            ${evidenceList}
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <h4 style="color: var(--dark-color); margin-bottom: var(--space-2);">Recommendations</h4>
-                        <ul style="margin: 0; padding-left: var(--space-4); color: var(--muted-color);">
-                            ${recommendationsList}
-                        </ul>
-                    </div>
-                </div>
-            `, { confirmText: 'Close' });
-        }
-        
-        function showError(message) {
-            showFlashMessage('error', message);
-            
-            // Show error state in main content
-            const container = document.querySelector('.container');
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--space-16); color: var(--muted-color);">
-                    <i class="fas fa-exclamation-triangle" style="font-size: var(--font-size-5xl); margin-bottom: var(--space-4); color: var(--danger-color);"></i>
-                    <h2 style="margin-bottom: var(--space-3); color: var(--dark-color);">Analysis Not Available</h2>
-                    <p style="margin-bottom: var(--space-6); font-size: var(--font-size-lg);">${message}</p>
-                    <div style="display: flex; gap: var(--space-4); justify-content: center;">
-                        <a href="/" class="btn btn-primary">
-                            <i class="fas fa-plus"></i>
-                            Start New Analysis
-                        </a>
-                        <a href="/dashboard" class="btn btn-outline">
-                            <i class="fas fa-chart-line"></i>
-                            View Dashboard
-                        </a>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Initialize tooltips and other interactive elements
-        function initializeInteractiveElements() {
-            // Add tooltips to risk scores
-            document.querySelectorAll('.risk-score-number').forEach(element => {
-                const level = element.className.split(' ').find(c => ['low', 'medium', 'high', 'critical'].includes(c));
-                const ranges = {
-                    'low': '0-2.5',
-                    'medium': '2.5-5.0', 
-                    'high': '5.0-7.5',
-                    'critical': '7.5-10.0'
-                };
-                element.title = `${level.toUpperCase()} risk (${ranges[level]} range)`;
-            });
-            
-            // Add copy functionality to paper ID
-            document.querySelectorAll('[data-paper-id]').forEach(element => {
-                element.style.cursor = 'pointer';
-                element.title = 'Click to copy Paper ID';
-                element.addEventListener('click', function() {
-                    GuardianLLM.utils.copyToClipboard(this.dataset.paperId);
-                    showToast('Paper ID copied to clipboard', 'success');
-                });
-            });
-        }
-        
-        // Call initialization after DOM updates
-        setTimeout(initializeInteractiveElements, 500);
-        
-        console.log('✅ Analysis page initialized');
-    </script>
+   <script>
+       // Global variables
+       let currentAnalysisMode = 'enhanced';
+       let analysisResults = null;
+       let currentFile = null;
+       
+       // Initialize page
+       document.addEventListener('DOMContentLoaded', function() {
+           updateAnalysisModeOptions();
+           setupFileHandlers();
+           
+           // Load any saved state
+           loadSavedState();
+           
+           console.log('✅ Analysis page initialized');
+       });
+       
+       // Tab switching
+       function switchTab(tabName) {
+           // Update tab buttons
+           document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(tabName + 'Tab').classList.add('active');
+           
+           // Update tab content
+           document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+           document.getElementById(tabName + 'Content').classList.add('active');
+           
+           // Clear opposite input
+           if (tabName === 'text') {
+               clearFile();
+           } else {
+               document.getElementById('textInput').value = '';
+               updateCharacterCount();
+           }
+       }
+       
+       // Character counter
+       function updateCharacterCount() {
+           const textarea = document.getElementById('textInput');
+           const counter = document.getElementById('charCounter');
+           const count = textarea.value.length;
+           const max = 10000;
+           
+           counter.textContent = `${count.toLocaleString()} / ${max.toLocaleString()} characters`;
+           
+           // Update styling based on count
+           counter.className = 'character-counter';
+           if (count > max * 0.9) {
+               counter.classList.add('danger');
+           } else if (count > max * 0.8) {
+               counter.classList.add('warning');
+           }
+       }
+       
+       // Analysis mode selection
+       function selectAnalysisMode(mode) {
+           currentAnalysisMode = mode;
+           
+           // Update visual selection
+           document.querySelectorAll('.option-card').forEach(card => {
+               card.classList.remove('selected');
+           });
+           document.querySelector(`[data-mode="${mode}"]`).classList.add('selected');
+           
+           updateAnalysisModeOptions();
+       }
+       
+       function updateAnalysisModeOptions() {
+           const cotOptions = document.getElementById('cotOptions');
+           
+           if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+               cotOptions.classList.add('visible');
+           } else {
+               cotOptions.classList.remove('visible');
+           }
+       }
+       
+       // File handling
+       function setupFileHandlers() {
+           const uploadArea = document.querySelector('.upload-area');
+           
+           uploadArea.addEventListener('dragenter', function(e) {
+               e.preventDefault();
+               this.classList.add('dragover');
+           });
+           
+           uploadArea.addEventListener('dragleave', function(e) {
+               e.preventDefault();
+               if (!this.contains(e.relatedTarget)) {
+                   this.classList.remove('dragover');
+               }
+           });
+       }
+       
+       function handleDragOver(e) {
+           e.preventDefault();
+       }
+       
+       function handleDragLeave(e) {
+           if (!e.currentTarget.contains(e.relatedTarget)) {
+               e.currentTarget.classList.remove('dragover');
+           }
+       }
+       
+       function handleFileDrop(e) {
+           e.preventDefault();
+           e.currentTarget.classList.remove('dragover');
+           
+           const files = e.dataTransfer.files;
+           if (files.length > 0) {
+               processFile(files[0]);
+           }
+       }
+       
+       function handleFileSelect(e) {
+           const files = e.target.files;
+           if (files.length > 0) {
+               processFile(files[0]);
+           }
+       }
+       
+       function processFile(file) {
+           // Validate file type
+           const allowedTypes = ['.pdf', '.docx', '.txt', '.doc'];
+           const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+           
+           if (!allowedTypes.includes(fileExtension)) {
+               showToast('Unsupported file type. Please use PDF, DOCX, or TXT files.', 'error');
+               return;
+           }
+           
+           // Validate file size (10MB limit)
+           if (file.size > 10 * 1024 * 1024) {
+               showToast('File too large. Please use files smaller than 10MB.', 'error');
+               return;
+           }
+           
+           currentFile = file;
+           displayFileInfo(file);
+       }
+       
+       function displayFileInfo(file) {
+           const fileInfo = document.getElementById('fileInfo');
+           const fileName = document.getElementById('fileName');
+           const fileSize = document.getElementById('fileSize');
+           const fileIcon = document.getElementById('fileIcon');
+           
+           fileName.textContent = file.name;
+           fileSize.textContent = formatFileSize(file.size);
+           
+           // Set appropriate icon
+           const extension = file.name.split('.').pop().toLowerCase();
+           if (extension === 'pdf') {
+               fileIcon.className = 'fas fa-file-pdf';
+           } else if (['docx', 'doc'].includes(extension)) {
+               fileIcon.className = 'fas fa-file-word';
+           } else {
+               fileIcon.className = 'fas fa-file-alt';
+           }
+           
+           fileInfo.style.display = 'block';
+       }
+       
+       function clearFile() {
+           currentFile = null;
+           document.getElementById('fileInput').value = '';
+           document.getElementById('fileInfo').style.display = 'none';
+       }
+       
+       function formatFileSize(bytes) {
+           if (bytes === 0) return '0 Bytes';
+           const k = 1024;
+           const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+           const i = Math.floor(Math.log(bytes) / Math.log(k));
+           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+       }
+       
+       // Analysis functions
+       async function performAnalysis() {
+           const textInput = document.getElementById('textInput').value.trim();
+           
+           // Validate input
+           if (!textInput && !currentFile) {
+               showToast('Please enter text or upload a file to analyze', 'error');
+               return;
+           }
+           
+           if (textInput && textInput.length < 10) {
+               showToast('Please enter at least 10 characters for meaningful analysis', 'error');
+               return;
+           }
+           
+           try {
+               // Update UI to loading state
+               setAnalysisLoading(true);
+               
+               let analysisText = textInput;
+               
+               // If file is selected, extract text first
+               if (currentFile) {
+                   analysisText = await extractTextFromFile(currentFile);
+               }
+               
+               // Prepare analysis options
+               const options = {
+                   analysis_mode: currentAnalysisMode,
+                   domain: document.getElementById('domainSelect').value,
+                   sensitivity: document.getElementById('sensitivityLevel').value,
+                   include_recommendations: document.getElementById('includeRecommendations').checked,
+                   enable_semantic: document.getElementById('enableSemanticAnalysis').checked,
+                   save_to_dashboard: document.getElementById('saveToDashboard').checked
+               };
+               
+               // Add CoT-specific options
+               if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+                   options.cot_depth = document.getElementById('cotDepth').value;
+                   options.cot_focus = document.getElementById('cotFocus').value;
+                   options.enable_explanations = document.getElementById('enableExplanations').checked;
+               }
+               
+               // Determine API endpoint based on analysis mode
+               let endpoint = '/api/analyze';
+               if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+                   endpoint = '/api/analyze/cot';
+                   options.cot_mode = currentAnalysisMode === 'cot_only' ? 'standalone' : 'enhanced';
+               }
+               
+               // Perform analysis
+               const response = await fetch(endpoint, {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({
+                       text: analysisText,
+                       options: options
+                   })
+               });
+               
+               if (!response.ok) {
+                   throw new Error(`Analysis failed: ${response.statusText}`);
+               }
+               
+               const result = await response.json();
+               
+               if (result.status === 'success') {
+                   analysisResults = result.analysis;
+                   displayResults(analysisResults);
+                   saveAnalysisState();
+                   
+                   showToast('Analysis completed successfully!', 'success');
+               } else {
+                   throw new Error(result.error || 'Analysis failed');
+               }
+               
+           } catch (error) {
+               console.error('Analysis error:', error);
+               showToast(`Analysis failed: ${error.message}`, 'error');
+           } finally {
+               setAnalysisLoading(false);
+           }
+       }
+       
+       function setAnalysisLoading(loading) {
+           const btn = document.getElementById('analyzeBtn');
+           const btnText = document.getElementById('analyzeBtnText');
+           const spinner = document.getElementById('loadingSpinner');
+           
+           if (loading) {
+               btn.disabled = true;
+               btnText.textContent = 'Analyzing...';
+               spinner.style.display = 'block';
+           } else {
+               btn.disabled = false;
+               btnText.textContent = 'Start Analysis';
+               spinner.style.display = 'none';
+           }
+       }
+       
+       async function extractTextFromFile(file) {
+           const formData = new FormData();
+           formData.append('file', file);
+           
+           const response = await fetch('/api/extract-text', {
+               method: 'POST',
+               body: formData
+           });
+           
+           if (!response.ok) {
+               throw new Error('Failed to extract text from file');
+           }
+           
+           const result = await response.json();
+           
+           if (result.status === 'success') {
+               return result.text;
+           } else {
+               throw new Error(result.error || 'Text extraction failed');
+           }
+       }
+       
+       // Results display
+       function displayResults(data) {
+           const resultsSection = document.getElementById('resultsSection');
+           
+           // Show results section
+           resultsSection.classList.add('visible');
+           resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+           
+           // Display overall score
+           displayOverallScore(data);
+           
+           // Display risk categories
+           displayRiskCategories(data.risk_assessments || []);
+           
+           // Display Chain of Thought if available
+           if (data.chain_of_thought) {
+               displayChainOfThought(data.chain_of_thought);
+           }
+           
+           // Display recommendations
+           displayRecommendations(data.recommendations || []);
+       }
+       
+       function displayOverallScore(data) {
+           const container = document.getElementById('overallScore');
+           const overallRisk = data.risk_analysis?.overall_risk?.score || data.overall_risk_score || 0;
+           const riskLevel = getRiskLevel(overallRisk * 10); // Convert to 0-10 scale if needed
+           
+           container.innerHTML = `
+               <div class="score-circle ${riskLevel}">
+                   <div class="score-text">${(overallRisk * 10).toFixed(1)}</div>
+               </div>
+               <div class="score-label">Overall Risk Score</div>
+               <div class="risk-level-badge ${riskLevel}">
+                   <i class="fas fa-${getIconForLevel(riskLevel)}"></i>
+                   ${riskLevel.toUpperCase()} RISK
+               </div>
+           `;
+       }
+       
+       function displayRiskCategories(assessments) {
+           const container = document.getElementById('riskCategories');
+           
+           if (!assessments || assessments.length === 0) {
+               container.innerHTML = `
+                   <div style="text-align: center; padding: var(--space-8); color: var(--muted-color); grid-column: 1 / -1;">
+                       <i class="fas fa-info-circle" style="font-size: var(--font-size-3xl); margin-bottom: var(--space-3); opacity: 0.5;"></i>
+                       <h3>No Specific Risk Categories Detected</h3>
+                       <p>The analysis did not identify significant risks in specific categories.</p>
+                   </div>
+               `;
+               return;
+           }
+           
+           // Sort by score (highest first)
+           const sortedAssessments = [...assessments].sort((a, b) => (b.score || 0) - (a.score || 0));
+           
+           container.innerHTML = sortedAssessments.map(assessment => `
+               <div class="risk-card ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                   <div class="risk-header">
+                       <div>
+                           <div class="risk-category-name">
+                               <div class="risk-icon ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                                   <i class="fas fa-${getIconForCategory(assessment.category)}"></i>
+                               </div>
+                               ${formatCategoryName(assessment.category)}
+                           </div>
+                       </div>
+                       <div class="risk-score-display">
+                           <div class="risk-score-number ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                               ${(assessment.score * 10).toFixed(1)}
+                           </div>
+                           <div class="confidence-score">
+                               ${Math.round((assessment.confidence || 0) * 100)}% confidence
+                           </div>
+                       </div>
+                   </div>
+                   
+                   ${assessment.explanation ? `
+                       <div style="color: var(--muted-color); line-height: var(--line-height-relaxed); margin-bottom: var(--space-4);">
+                           ${assessment.explanation}
+                       </div>
+                   ` : ''}
+                   
+                   ${assessment.evidence && assessment.evidence.length > 0 ? `
+                       <div style="margin-bottom: var(--space-4);">
+                           <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--dark-color); margin-bottom: var(--space-2);">
+                               <i class="fas fa-search"></i> Evidence
+                           </div>
+                           <ul style="list-style: none; padding: 0; margin: 0;">
+                               ${assessment.evidence.slice(0, 3).map(evidence => `
+                                   <li style="padding: var(--space-1) 0; color: var(--muted-color); font-size: var(--font-size-sm); position: relative; padding-left: var(--space-4);">
+                                       <span style="position: absolute; left: 0; color: var(--primary-color); font-weight: bold;">•</span>
+                                       ${evidence}
+                                   </li>
+                               `).join('')}
+                               ${assessment.evidence.length > 3 ? `
+                                   <li style="padding: var(--space-1) 0; color: var(--muted-color); font-size: var(--font-size-sm); font-style: italic;">
+                                       +${assessment.evidence.length - 3} more items...
+                                   </li>
+                               ` : ''}
+                           </ul>
+                       </div>
+                   ` : ''}
+                   
+                   ${assessment.cot_reasoning ? `
+                       <div style="background: rgba(102, 126, 234, 0.05); border-radius: var(--radius-lg); padding: var(--space-3); margin-top: var(--space-4);">
+                           <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--primary-color); margin-bottom: var(--space-2);">
+                               <i class="fas fa-brain"></i> CoT Reasoning
+                           </div>
+                           <div style="color: var(--muted-color); font-size: var(--font-size-sm); line-height: var(--line-height-relaxed);">
+                               ${assessment.cot_reasoning}
+                           </div>
+                       </div>
+                   ` : ''}
+               </div>
+           `).join('');
+       }
+       
+       function displayChainOfThought(cotData) {
+           const section = document.getElementById('cotSection');
+           const confidenceElement = document.getElementById('cotConfidence');
+           const stepsContainer = document.getElementById('reasoningSteps');
+           
+           // Show CoT section
+           section.classList.add('visible');
+           
+           // Update confidence
+           <!-- Text Input Tab -->
+           <div class="tab-content active" id="textContent">
+               <div class="form-group">
+                   <label for="textInput" class="form-label">
+                       <i class="fas fa-edit"></i>
+                       Enter Text for Analysis
+                   </label>
+                   <textarea 
+                       id="textInput" 
+                       class="form-control textarea-large" 
+                       placeholder="Paste your research paper abstract, AI system description, or any text content you want to analyze for ethical risks..."
+                       maxlength="10000"
+                       oninput="updateCharacterCount()"
+                   ></textarea>
+                   <div class="character-counter" id="charCounter">0 / 10,000 characters</div>
+               </div>
+           </div>
+
+           <!-- File Upload Tab -->
+           <div class="tab-content" id="fileContent">
+               <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                    ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                   <div class="upload-icon">
+                       <i class="fas fa-cloud-upload-alt"></i>
+                   </div>
+                   <div class="upload-text">Drop your file here or click to browse</div>
+                   <div class="upload-hint">Supports PDF, DOCX, TXT files up to 10MB</div>
+                   <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt,.doc" onchange="handleFileSelect(event)">
+               </div>
+               <div id="fileInfo" style="display: none; margin-top: var(--space-4);">
+                   <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--light-color); border-radius: var(--radius-lg);">
+                       <i class="fas fa-file" id="fileIcon"></i>
+                       <div>
+                           <div id="fileName" style="font-weight: var(--font-weight-semibold);"></div>
+                           <div id="fileSize" style="font-size: var(--font-size-sm); color: var(--muted-color);"></div>
+                       </div>
+                       <button onclick="clearFile()" style="margin-left: auto; background: none; border: none; color: var(--danger-color); cursor: pointer;">
+                           <i class="fas fa-times"></i>
+                       </button>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Analysis Options -->
+           <div class="form-group">
+               <label class="form-label">
+                   <i class="fas fa-cogs"></i>
+                   Analysis Mode
+               </label>
+               <div class="options-grid">
+                   <div class="option-card selected" data-mode="enhanced" onclick="selectAnalysisMode('enhanced')">
+                       <div class="option-title">
+                           <i class="fas fa-brain"></i>
+                           Enhanced Analysis
+                           <span class="option-badge">Recommended</span>
+                       </div>
+                       <div class="option-description">
+                           Combines traditional risk detection with Chain of Thought reasoning and semantic analysis for comprehensive results.
+                       </div>
+                   </div>
+                   
+                   <div class="option-card" data-mode="cot_only" onclick="selectAnalysisMode('cot_only')">
+                       <div class="option-title">
+                           <i class="fas fa-link"></i>
+                           Chain of Thought Only
+                       </div>
+                       <div class="option-description">
+                           Uses only systematic step-by-step reasoning to identify and assess ethical risks with detailed explanations.
+                       </div>
+                   </div>
+                   
+                   <div class="option-card" data-mode="standard" onclick="selectAnalysisMode('standard')">
+                       <div class="option-title">
+                           <i class="fas fa-search"></i>
+                           Standard Analysis
+                       </div>
+                       <div class="option-description">
+                           Traditional keyword and pattern-based risk detection with semantic enhancement but without CoT reasoning.
+                       </div>
+                   </div>
+               </div>
+               
+               <!-- Chain of Thought Options -->
+               <div class="cot-options" id="cotOptions">
+                   <h4 style="margin: 0 0 var(--space-3) 0; color: var(--dark-color);">
+                       <i class="fas fa-brain"></i>
+                       Chain of Thought Settings
+                   </h4>
+                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4);">
+                       <div>
+                           <label for="cotDepth" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                               Reasoning Depth
+                           </label>
+                           <select id="cotDepth" class="form-control form-select">
+                               <option value="standard">Standard (6 steps)</option>
+                               <option value="detailed">Detailed (8 steps)</option>
+                               <option value="comprehensive">Comprehensive (10+ steps)</option>
+                           </select>
+                       </div>
+                       <div>
+                           <label for="cotFocus" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                               Focus Areas
+                           </label>
+                           <select id="cotFocus" class="form-control form-select">
+                               <option value="all">All Categories</option>
+                               <option value="high_risk">High-Risk Areas Only</option>
+                               <option value="societal">Societal Impact Focus</option>
+                               <option value="technical">Technical Risks Focus</option>
+                           </select>
+                       </div>
+                   </div>
+                   <div style="margin-top: var(--space-3);">
+                       <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                           <input type="checkbox" id="enableExplanations" checked>
+                           <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                               Include detailed explanations for each reasoning step
+                           </span>
+                       </label>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Additional Options -->
+           <div class="form-group">
+               <label class="form-label">
+                   <i class="fas fa-sliders-h"></i>
+                   Additional Options
+               </label>
+               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-4);">
+                   <div>
+                       <label for="domainSelect" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                           Domain Context
+                       </label>
+                       <select id="domainSelect" class="form-control form-select">
+                           <option value="auto">Auto-detect</option>
+                           <option value="biomedical">Biomedical/Healthcare</option>
+                           <option value="legal">Legal/Regulatory</option>
+                           <option value="financial">Financial Services</option>
+                           <option value="technical">Technical/Engineering</option>
+                           <option value="social">Social Sciences</option>
+                           <option value="general">General Purpose</option>
+                       </select>
+                   </div>
+                   <div>
+                       <label for="sensitivityLevel" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--dark-color); margin-bottom: var(--space-2); display: block;">
+                           Sensitivity Level
+                       </label>
+                       <select id="sensitivityLevel" class="form-control form-select">
+                           <option value="balanced">Balanced</option>
+                           <option value="conservative">Conservative (Higher sensitivity)</option>
+                           <option value="permissive">Permissive (Lower sensitivity)</option>
+                       </select>
+                   </div>
+               </div>
+               <div style="margin-top: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-4);">
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="includeRecommendations" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Generate mitigation recommendations
+                       </span>
+                   </label>
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="enableSemanticAnalysis" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Enable semantic risk detection
+                       </span>
+                   </label>
+                   <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                       <input type="checkbox" id="saveToDashboard" checked>
+                       <span style="font-size: var(--font-size-sm); color: var(--dark-color);">
+                           Save results to dashboard
+                       </span>
+                   </label>
+               </div>
+           </div>
+
+           <!-- Analysis Actions -->
+           <div style="display: flex; gap: var(--space-4); justify-content: center; margin-top: var(--space-8);">
+               <button id="analyzeBtn" class="btn btn-primary btn-lg" onclick="performAnalysis()">
+                   <i class="fas fa-play"></i>
+                   <span id="analyzeBtnText">Start Analysis</span>
+                   <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+               </button>
+               <button class="btn btn-outline" onclick="clearAnalysis()">
+                   <i class="fas fa-trash"></i>
+                   Clear
+               </button>
+               <button class="btn btn-outline" onclick="loadExample()">
+                   <i class="fas fa-lightbulb"></i>
+                   Load Example
+               </button>
+           </div>
+       </div>
+
+       <!-- Results Section -->
+       <div class="results-section" id="resultsSection">
+           <div class="results-header">
+               <div class="results-title">
+                   <i class="fas fa-chart-bar"></i>
+                   Analysis Results
+               </div>
+               <div style="display: flex; gap: var(--space-3);">
+                   <button class="btn btn-outline" onclick="exportResults('pdf')">
+                       <i class="fas fa-file-pdf"></i>
+                       Export PDF
+                   </button>
+                   <button class="btn btn-outline" onclick="shareResults()">
+                       <i class="fas fa-share-alt"></i>
+                       Share
+                   </button>
+               </div>
+           </div>
+
+           <!-- Overall Score -->
+           <div class="overall-score" id="overallScore">
+               <!-- Will be populated by JavaScript -->
+           </div>
+
+           <!-- Risk Categories -->
+           <div class="risk-categories" id="riskCategories">
+               <!-- Will be populated by JavaScript -->
+           </div>
+
+           <!-- Chain of Thought Section -->
+           <div class="cot-section" id="cotSection">
+               <div class="cot-header">
+                   <div class="cot-title">
+                       <i class="fas fa-brain"></i>
+                       Chain of Thought Reasoning
+                       <span class="cot-badge">Advanced AI</span>
+                   </div>
+                   <div style="display: flex; gap: var(--space-2); align-items: center;">
+                       <span style="font-size: var(--font-size-sm); color: var(--muted-color);">Confidence:</span>
+                       <span id="cotConfidence" style="font-weight: var(--font-weight-semibold); color: var(--primary-color);">--</span>
+                   </div>
+               </div>
+               <div class="reasoning-steps" id="reasoningSteps">
+                   <!-- Will be populated by JavaScript -->
+               </div>
+           </div>
+
+           <!-- Recommendations Section -->
+           <div class="recommendations-section" id="recommendationsSection">
+               <div class="recommendations-title">
+                   <i class="fas fa-lightbulb"></i>
+                   Recommendations & Mitigation Strategies
+               </div>
+               <div id="recommendationsList">
+                   <!-- Will be populated by JavaScript -->
+               </div>
+           </div>
+
+           <!-- Actions Section -->
+           <div class="actions-section">
+               <button class="btn btn-primary" onclick="analyzeAnother()">
+                   <i class="fas fa-plus"></i>
+                   Analyze Another Text
+               </button>
+               <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                   <i class="fas fa-chart-line"></i>
+                   View Dashboard
+               </a>
+               <button class="btn btn-outline" onclick="window.print()">
+                   <i class="fas fa-print"></i>
+                   Print Results
+               </button>
+               <button class="btn btn-outline" onclick="saveToProject()">
+                   <i class="fas fa-bookmark"></i>
+                   Save to Project
+               </button>
+           </div>
+       </div>
+   </div>
+
+   <!-- Feature Badges Style -->
+   <style>
+       .feature-badge {
+           display: inline-flex;
+           align-items: center;
+           gap: var(--space-2);
+           background: rgba(102, 126, 234, 0.1);
+           color: var(--primary-color);
+           padding: var(--space-2) var(--space-4);
+           border-radius: var(--radius-full);
+           font-size: var(--font-size-sm);
+           font-weight: var(--font-weight-medium);
+           border: 1px solid rgba(102, 126, 234, 0.2);
+       }
+   </style>
+{% endblock %}
+
+{% block page_js %}
+   <script>
+       // Global variables
+       let currentAnalysisMode = 'enhanced';
+       let analysisResults = null;
+       let currentFile = null;
+       
+       // Initialize page
+       document.addEventListener('DOMContentLoaded', function() {
+           updateAnalysisModeOptions();
+           setupFileHandlers();
+           
+           // Load any saved state
+           loadSavedState();
+           
+           console.log('✅ Analysis page initialized');
+       });
+       
+       // Tab switching
+       function switchTab(tabName) {
+           // Update tab buttons
+           document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(tabName + 'Tab').classList.add('active');
+           
+           // Update tab content
+           document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+           document.getElementById(tabName + 'Content').classList.add('active');
+           
+           // Clear opposite input
+           if (tabName === 'text') {
+               clearFile();
+           } else {
+               document.getElementById('textInput').value = '';
+               updateCharacterCount();
+           }
+       }
+       
+       // Character counter
+       function updateCharacterCount() {
+           const textarea = document.getElementById('textInput');
+           const counter = document.getElementById('charCounter');
+           const count = textarea.value.length;
+           const max = 10000;
+           
+           counter.textContent = `${count.toLocaleString()} / ${max.toLocaleString()} characters`;
+           
+           // Update styling based on count
+           counter.className = 'character-counter';
+           if (count > max * 0.9) {
+               counter.classList.add('danger');
+           } else if (count > max * 0.8) {
+               counter.classList.add('warning');
+           }
+       }
+       
+       // Analysis mode selection
+       function selectAnalysisMode(mode) {
+           currentAnalysisMode = mode;
+           
+           // Update visual selection
+           document.querySelectorAll('.option-card').forEach(card => {
+               card.classList.remove('selected');
+           });
+           document.querySelector(`[data-mode="${mode}"]`).classList.add('selected');
+           
+           updateAnalysisModeOptions();
+       }
+       
+       function updateAnalysisModeOptions() {
+           const cotOptions = document.getElementById('cotOptions');
+           
+           if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+               cotOptions.classList.add('visible');
+           } else {
+               cotOptions.classList.remove('visible');
+           }
+       }
+       
+       // File handling
+       function setupFileHandlers() {
+           const uploadArea = document.querySelector('.upload-area');
+           
+           uploadArea.addEventListener('dragenter', function(e) {
+               e.preventDefault();
+               this.classList.add('dragover');
+           });
+           
+           uploadArea.addEventListener('dragleave', function(e) {
+               e.preventDefault();
+               if (!this.contains(e.relatedTarget)) {
+                   this.classList.remove('dragover');
+               }
+           });
+       }
+       
+       function handleDragOver(e) {
+           e.preventDefault();
+       }
+       
+       function handleDragLeave(e) {
+           if (!e.currentTarget.contains(e.relatedTarget)) {
+               e.currentTarget.classList.remove('dragover');
+           }
+       }
+       
+       function handleFileDrop(e) {
+           e.preventDefault();
+           e.currentTarget.classList.remove('dragover');
+           
+           const files = e.dataTransfer.files;
+           if (files.length > 0) {
+               processFile(files[0]);
+           }
+       }
+       
+       function handleFileSelect(e) {
+           const files = e.target.files;
+           if (files.length > 0) {
+               processFile(files[0]);
+           }
+       }
+       
+       function processFile(file) {
+           // Validate file type
+           const allowedTypes = ['.pdf', '.docx', '.txt', '.doc'];
+           const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+           
+           if (!allowedTypes.includes(fileExtension)) {
+               showToast('Unsupported file type. Please use PDF, DOCX, or TXT files.', 'error');
+               return;
+           }
+           
+           // Validate file size (10MB limit)
+           if (file.size > 10 * 1024 * 1024) {
+               showToast('File too large. Please use files smaller than 10MB.', 'error');
+               return;
+           }
+           
+           currentFile = file;
+           displayFileInfo(file);
+       }
+       
+       function displayFileInfo(file) {
+           const fileInfo = document.getElementById('fileInfo');
+           const fileName = document.getElementById('fileName');
+           const fileSize = document.getElementById('fileSize');
+           const fileIcon = document.getElementById('fileIcon');
+           
+           fileName.textContent = file.name;
+           fileSize.textContent = formatFileSize(file.size);
+           
+           // Set appropriate icon
+           const extension = file.name.split('.').pop().toLowerCase();
+           if (extension === 'pdf') {
+               fileIcon.className = 'fas fa-file-pdf';
+           } else if (['docx', 'doc'].includes(extension)) {
+               fileIcon.className = 'fas fa-file-word';
+           } else {
+               fileIcon.className = 'fas fa-file-alt';
+           }
+           
+           fileInfo.style.display = 'block';
+       }
+       
+       function clearFile() {
+           currentFile = null;
+           document.getElementById('fileInput').value = '';
+           document.getElementById('fileInfo').style.display = 'none';
+       }
+       
+       function formatFileSize(bytes) {
+           if (bytes === 0) return '0 Bytes';
+           const k = 1024;
+           const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+           const i = Math.floor(Math.log(bytes) / Math.log(k));
+           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+       }
+       
+       // Analysis functions
+       async function performAnalysis() {
+           const textInput = document.getElementById('textInput').value.trim();
+           
+           // Validate input
+           if (!textInput && !currentFile) {
+               showToast('Please enter text or upload a file to analyze', 'error');
+               return;
+           }
+           
+           if (textInput && textInput.length < 10) {
+               showToast('Please enter at least 10 characters for meaningful analysis', 'error');
+               return;
+           }
+           
+           try {
+               // Update UI to loading state
+               setAnalysisLoading(true);
+               
+               let analysisText = textInput;
+               
+               // If file is selected, extract text first
+               if (currentFile) {
+                   analysisText = await extractTextFromFile(currentFile);
+               }
+               
+               // Prepare analysis options
+               const options = {
+                   analysis_mode: currentAnalysisMode,
+                   domain: document.getElementById('domainSelect').value,
+                   sensitivity: document.getElementById('sensitivityLevel').value,
+                   include_recommendations: document.getElementById('includeRecommendations').checked,
+                   enable_semantic: document.getElementById('enableSemanticAnalysis').checked,
+                   save_to_dashboard: document.getElementById('saveToDashboard').checked
+               };
+               
+               // Add CoT-specific options
+               if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+                   options.cot_depth = document.getElementById('cotDepth').value;
+                   options.cot_focus = document.getElementById('cotFocus').value;
+                   options.enable_explanations = document.getElementById('enableExplanations').checked;
+               }
+               
+               // Determine API endpoint based on analysis mode
+               let endpoint = '/api/analyze';
+               if (currentAnalysisMode === 'enhanced' || currentAnalysisMode === 'cot_only') {
+                   endpoint = '/api/analyze/cot';
+                   options.cot_mode = currentAnalysisMode === 'cot_only' ? 'standalone' : 'enhanced';
+               }
+               
+               // Perform analysis
+               const response = await fetch(endpoint, {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({
+                       text: analysisText,
+                       options: options
+                   })
+               });
+               
+               if (!response.ok) {
+                   throw new Error(`Analysis failed: ${response.statusText}`);
+               }
+               
+               const result = await response.json();
+               
+               if (result.status === 'success') {
+                   analysisResults = result.analysis;
+                   displayResults(analysisResults);
+                   saveAnalysisState();
+                   
+                   showToast('Analysis completed successfully!', 'success');
+               } else {
+                   throw new Error(result.error || 'Analysis failed');
+               }
+               
+           } catch (error) {
+               console.error('Analysis error:', error);
+               showToast(`Analysis failed: ${error.message}`, 'error');
+           } finally {
+               setAnalysisLoading(false);
+           }
+       }
+       
+       function setAnalysisLoading(loading) {
+           const btn = document.getElementById('analyzeBtn');
+           const btnText = document.getElementById('analyzeBtnText');
+           const spinner = document.getElementById('loadingSpinner');
+           
+           if (loading) {
+               btn.disabled = true;
+               btnText.textContent = 'Analyzing...';
+               spinner.style.display = 'block';
+           } else {
+               btn.disabled = false;
+               btnText.textContent = 'Start Analysis';
+               spinner.style.display = 'none';
+           }
+       }
+       
+       async function extractTextFromFile(file) {
+           const formData = new FormData();
+           formData.append('file', file);
+           
+           const response = await fetch('/api/extract-text', {
+               method: 'POST',
+               body: formData
+           });
+           
+           if (!response.ok) {
+               throw new Error('Failed to extract text from file');
+           }
+           
+           const result = await response.json();
+           
+           if (result.status === 'success') {
+               return result.text;
+           } else {
+               throw new Error(result.error || 'Text extraction failed');
+           }
+       }
+       
+       // Results display
+       function displayResults(data) {
+           const resultsSection = document.getElementById('resultsSection');
+           
+           // Show results section
+           resultsSection.classList.add('visible');
+           resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+           
+           // Display overall score
+           displayOverallScore(data);
+           
+           // Display risk categories
+           displayRiskCategories(data.risk_assessments || []);
+           
+           // Display Chain of Thought if available
+           if (data.chain_of_thought) {
+               displayChainOfThought(data.chain_of_thought);
+           }
+           
+           // Display recommendations
+           displayRecommendations(data.recommendations || []);
+       }
+       
+       function displayOverallScore(data) {
+           const container = document.getElementById('overallScore');
+           const overallRisk = data.risk_analysis?.overall_risk?.score || data.overall_risk_score || 0;
+           const riskLevel = getRiskLevel(overallRisk * 10); // Convert to 0-10 scale if needed
+           
+           container.innerHTML = `
+               <div class="score-circle ${riskLevel}">
+                   <div class="score-text">${(overallRisk * 10).toFixed(1)}</div>
+               </div>
+               <div class="score-label">Overall Risk Score</div>
+               <div class="risk-level-badge ${riskLevel}">
+                   <i class="fas fa-${getIconForLevel(riskLevel)}"></i>
+                   ${riskLevel.toUpperCase()} RISK
+               </div>
+           `;
+       }
+       
+       function displayRiskCategories(assessments) {
+           const container = document.getElementById('riskCategories');
+           
+           if (!assessments || assessments.length === 0) {
+               container.innerHTML = `
+                   <div style="text-align: center; padding: var(--space-8); color: var(--muted-color); grid-column: 1 / -1;">
+                       <i class="fas fa-info-circle" style="font-size: var(--font-size-3xl); margin-bottom: var(--space-3); opacity: 0.5;"></i>
+                       <h3>No Specific Risk Categories Detected</h3>
+                       <p>The analysis did not identify significant risks in specific categories.</p>
+                   </div>
+               `;
+               return;
+           }
+           
+           // Sort by score (highest first)
+           const sortedAssessments = [...assessments].sort((a, b) => (b.score || 0) - (a.score || 0));
+           
+           container.innerHTML = sortedAssessments.map(assessment => `
+               <div class="risk-card ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                   <div class="risk-header">
+                       <div>
+                           <div class="risk-category-name">
+                               <div class="risk-icon ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                                   <i class="fas fa-${getIconForCategory(assessment.category)}"></i>
+                               </div>
+                               ${formatCategoryName(assessment.category)}
+                           </div>
+                       </div>
+                       <div class="risk-score-display">
+                           <div class="risk-score-number ${assessment.level || getRiskLevel(assessment.score * 10)}">
+                               ${(assessment.score * 10).toFixed(1)}
+                           </div>
+                           <div class="confidence-score">
+                               ${Math.round((assessment.confidence || 0) * 100)}% confidence
+                           </div>
+                       </div>
+                   </div>
+                   
+                   ${assessment.explanation ? `
+                       <div style="color: var(--muted-color); line-height: var(--line-height-relaxed); margin-bottom: var(--space-4);">
+                           ${assessment.explanation}
+                       </div>
+                   ` : ''}
+                   
+                   ${assessment.evidence && assessment.evidence.length > 0 ? `
+                       <div style="margin-bottom: var(--space-4);">
+                           <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--dark-color); margin-bottom: var(--space-2);">
+                               <i class="fas fa-search"></i> Evidence
+                           </div>
+                           <ul style="list-style: none; padding: 0; margin: 0;">
+                               ${assessment.evidence.slice(0, 3).map(evidence => `
+                                   <li style="padding: var(--space-1) 0; color: var(--muted-color); font-size: var(--font-size-sm); position: relative; padding-left: var(--space-4);">
+                                       <span style="position: absolute; left: 0; color: var(--primary-color); font-weight: bold;">•</span>
+                                       ${evidence}
+                                   </li>
+                               `).join('')}
+                               ${assessment.evidence.length > 3 ? `
+                                   <li style="padding: var(--space-1) 0; color: var(--muted-color); font-size: var(--font-size-sm); font-style: italic;">
+                                       +${assessment.evidence.length - 3} more items...
+                                   </li>
+                               ` : ''}
+                           </ul>
+                       </div>
+                   ` : ''}
+                   
+                   ${assessment.cot_reasoning ? `
+                       <div style="background: rgba(102, 126, 234, 0.05); border-radius: var(--radius-lg); padding: var(--space-3); margin-top: var(--space-4);">
+                           <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--primary-color); margin-bottom: var(--space-2);">
+                               <i class="fas fa-brain"></i> CoT Reasoning
+                           </div>
+                           <div style="color: var(--muted-color); font-size: var(--font-size-sm); line-height: var(--line-height-relaxed);">
+                               ${assessment.cot_reasoning}
+                           </div>
+                       </div>
+                   ` : ''}
+               </div>
+           `).join('');
+       }
+       
+       function displayChainOfThought(cotData) {
+           const section = document.getElementById('cotSection');
+           const confidenceElement = document.getElementById('cotConfidence');
+           const stepsContainer = document.getElementById('reasoningSteps');
+           
+           // Show CoT section
+           section.classList.add('visible');
+           
+           // Update confidence
+           // Update confidence
+           const confidence = cotData.cot_confidence || cotData.confidence || 0;
+           confidenceElement.textContent = `${Math.round(confidence * 100)}%`;
+           
+           // Get reasoning steps
+           const reasoningSteps = cotData.reasoning_chain?.reasoning_steps || [];
+           
+           if (reasoningSteps.length === 0) {
+               stepsContainer.innerHTML = `
+                   <div style="text-align: center; padding: var(--space-6); color: var(--muted-color);">
+                       <i class="fas fa-info-circle" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-3); opacity: 0.5;"></i>
+                       <p>No detailed reasoning steps available.</p>
+                   </div>
+               `;
+               return;
+           }
+           
+           // Display reasoning steps
+           stepsContainer.innerHTML = reasoningSteps.map((step, index) => `
+               <div class="reasoning-step">
+                   <div class="step-header">
+                       <div class="step-title">
+                           <div class="step-number">${index + 1}</div>
+                           ${formatStepTitle(step.step)}
+                       </div>
+                       <div class="step-confidence">
+                           <span>${Math.round((step.confidence || 0) * 100)}%</span>
+                           <div class="confidence-bar">
+                               <div class="confidence-fill" style="width: ${(step.confidence || 0) * 100}%"></div>
+                           </div>
+                       </div>
+                   </div>
+                   
+                   <div class="step-content">
+                       ${step.reasoning || 'No reasoning provided.'}
+                   </div>
+                   
+                   ${step.findings && step.findings.length > 0 ? `
+                       <div class="step-findings">
+                           <div class="findings-title">
+                               <i class="fas fa-lightbulb"></i>
+                               Key Findings
+                           </div>
+                           <ul class="findings-list">
+                               ${step.findings.slice(0, 5).map(finding => `
+                                   <li class="finding-item">${finding}</li>
+                               `).join('')}
+                               ${step.findings.length > 5 ? `
+                                   <li class="finding-item" style="font-style: italic;">
+                                       +${step.findings.length - 5} more findings...
+                                   </li>
+                               ` : ''}
+                           </ul>
+                       </div>
+                   ` : ''}
+               </div>
+           `).join('');
+       }
+       
+       function displayRecommendations(recommendations) {
+           const section = document.getElementById('recommendationsSection');
+           const container = document.getElementById('recommendationsList');
+           
+           if (!recommendations || recommendations.length === 0) {
+               container.innerHTML = `
+                   <div style="text-align: center; padding: var(--space-6); color: var(--muted-color);">
+                       <i class="fas fa-info-circle" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-3); opacity: 0.5;"></i>
+                       <p>No specific recommendations generated.</p>
+                   </div>
+               `;
+               return;
+           }
+           
+           // Sort recommendations by priority
+           const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+           const sortedRecommendations = [...recommendations].sort((a, b) => {
+               const priorityA = priorityOrder[a.priority] ?? 4;
+               const priorityB = priorityOrder[b.priority] ?? 4;
+               return priorityA - priorityB;
+           });
+           
+           container.innerHTML = sortedRecommendations.map(rec => `
+               <div class="recommendation-item">
+                   <div class="recommendation-header">
+                       <div class="recommendation-type">${rec.type || 'Recommendation'}</div>
+                       <div class="priority-badge ${rec.priority || 'medium'}">
+                           ${rec.priority || 'medium'} priority
+                       </div>
+                   </div>
+                   <div class="recommendation-message">
+                       ${rec.message || rec.action || 'No details provided.'}
+                   </div>
+               </div>
+           `).join('');
+       }
+       
+       // Utility functions
+       function getRiskLevel(score) {
+           if (score < 2.5) return 'low';
+           if (score < 5.0) return 'medium';
+           if (score < 7.5) return 'high';
+           return 'critical';
+       }
+       
+       function getIconForLevel(level) {
+           const icons = {
+               'low': 'check-circle',
+               'medium': 'exclamation-circle',
+               'high': 'exclamation-triangle',
+               'critical': 'times-circle'
+           };
+           return icons[level] || 'question-circle';
+       }
+       
+       function getIconForCategory(category) {
+           const icons = {
+               'bias_fairness': 'balance-scale',
+               'privacy_data': 'shield-alt',
+               'safety_security': 'lock',
+               'dual_use': 'exclamation-triangle',
+               'societal_impact': 'users',
+               'transparency': 'eye',
+               'overall': 'chart-bar'
+           };
+           return icons[category] || 'question-circle';
+       }
+       
+       function formatCategoryName(category) {
+           const names = {
+               'bias_fairness': 'Bias & Fairness',
+               'privacy_data': 'Privacy & Data Protection',
+               'safety_security': 'Safety & Security',
+               'dual_use': 'Dual-Use Potential',
+               'societal_impact': 'Societal Impact',
+               'transparency': 'Transparency & Explainability',
+               'overall': 'Overall Assessment'
+           };
+           return names[category] || category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+       }
+       
+       function formatStepTitle(stepType) {
+           const titles = {
+               'technique_identification': 'AI Technique Identification',
+               'misuse_analysis': 'Misuse Scenario Analysis',
+               'severity_assessment': 'Risk Severity Assessment',
+               'stakeholder_impact': 'Stakeholder Impact Analysis',
+               'mitigation_strategies': 'Mitigation Strategy Development',
+               'final_recommendation': 'Final Recommendation'
+           };
+           return titles[stepType] || stepType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+       }
+       
+       // Action functions
+       function clearAnalysis() {
+           if (confirm('Are you sure you want to clear the current analysis?')) {
+               // Clear inputs
+               document.getElementById('textInput').value = '';
+               clearFile();
+               updateCharacterCount();
+               
+               // Hide results
+               document.getElementById('resultsSection').classList.remove('visible');
+               document.getElementById('cotSection').classList.remove('visible');
+               
+               // Reset analysis data
+               analysisResults = null;
+               
+               // Clear saved state
+               localStorage.removeItem('guardian_analysis_state');
+               
+               showToast('Analysis cleared', 'info');
+           }
+       }
+       
+       function loadExample() {
+           const examples = [
+               {
+                   title: "Facial Recognition System",
+                   text: "We present a novel facial recognition system using deep learning that achieves 99% accuracy on our test dataset. The system uses convolutional neural networks trained on over 1 million facial images collected from social media platforms without explicit consent. Our approach demonstrates superior performance in identifying individuals across different lighting conditions and poses. The system has potential applications in security, surveillance, and law enforcement. While we acknowledge some privacy concerns, the benefits of enhanced security outweigh these considerations. The model shows slight performance variations across different demographic groups, with lower accuracy for certain ethnic minorities. We plan to deploy this system in public spaces for crowd monitoring and threat detection."
+               },
+               {
+                   title: "AI-Powered Hiring Algorithm",
+                   text: "This paper introduces an AI-powered hiring algorithm designed to streamline recruitment processes by automatically screening resumes and predicting candidate success. Our machine learning model analyzes historical hiring data from the past 10 years, including employee performance ratings, tenure, and demographic information. The algorithm uses natural language processing to extract key features from resumes and applies gradient boosting to rank candidates. Initial testing shows 85% accuracy in predicting successful hires. The system significantly reduces time-to-hire and allows HR departments to process thousands of applications efficiently. We trained the model on data from previous successful employees, which may reflect historical hiring biases. The algorithm prioritizes candidates from top-tier universities and those with traditional career paths. We recommend widespread adoption of this technology to improve hiring efficiency across industries."
+               },
+               {
+                   title: "Healthcare AI Diagnostic Tool",
+                   text: "We developed an AI diagnostic tool for early detection of skin cancer using deep learning on dermatological images. The system analyzes photos taken with standard smartphones and provides diagnostic recommendations to healthcare providers. Our dataset consists of 500,000 dermatological images with expert annotations. The model achieves 94% sensitivity and 89% specificity on our test set. The tool is designed for use in underserved communities with limited access to dermatologists. Patient data is stored in cloud servers for continuous model improvement. The system shows excellent performance across different skin types and lighting conditions. We ensure patient privacy through data anonymization techniques. The tool provides explainable AI features to help physicians understand diagnostic decisions. We plan to make this technology widely available through a mobile application that can be used by healthcare workers and patients directly."
+               }
+           ];
+           
+           const randomExample = examples[Math.floor(Math.random() * examples.length)];
+           
+           // Switch to text tab
+           switchTab('text');
+           
+           // Fill the text area
+           document.getElementById('textInput').value = randomExample.text;
+           updateCharacterCount();
+           
+           showToast(`Loaded example: ${randomExample.title}`, 'success');
+       }
+       
+       async function exportResults(format) {
+           if (!analysisResults) {
+               showToast('No analysis results to export', 'error');
+               return;
+           }
+           
+           try {
+               showGlobalLoading(`Generating ${format.toUpperCase()} export...`);
+               
+               // Simulate export process
+               await new Promise(resolve => setTimeout(resolve, 1500));
+               
+               if (format === 'pdf') {
+                   // Use browser's print functionality with custom CSS
+                   window.print();
+                   showToast('PDF export initiated. Use your browser\'s print dialog to save as PDF.', 'info');
+               } else {
+                   // For other formats, create download
+                   const exportData = {
+                       timestamp: new Date().toISOString(),
+                       analysis_mode: currentAnalysisMode,
+                       results: analysisResults
+                   };
+                   
+                   const dataStr = JSON.stringify(exportData, null, 2);
+                   const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                   const url = URL.createObjectURL(dataBlob);
+                   
+                   const downloadLink = document.createElement('a');
+                   downloadLink.href = url;
+                   downloadLink.download = `guardian_analysis_${Date.now()}.json`;
+                   downloadLink.click();
+                   
+                   URL.revokeObjectURL(url);
+                   showToast('Analysis results exported successfully', 'success');
+               }
+               
+           } catch (error) {
+               showToast('Export failed: ' + error.message, 'error');
+           } finally {
+               hideGlobalLoading();
+           }
+       }
+       
+       function shareResults() {
+           if (!analysisResults) {
+               showToast('No analysis results to share', 'error');
+               return;
+           }
+           
+           const shareData = {
+               title: 'Guardian LLM Analysis Results',
+               text: `Ethical risk analysis completed with overall score: ${analysisResults.overall_risk_score || 'N/A'}`,
+               url: window.location.href
+           };
+           
+           if (navigator.share) {
+               navigator.share(shareData).then(() => {
+                   showToast('Results shared successfully', 'success');
+               }).catch(() => {
+                   copyShareLink();
+               });
+           } else {
+               copyShareLink();
+           }
+       }
+       
+       function copyShareLink() {
+           const shareText = `Guardian LLM Analysis Results\nOverall Risk Score: ${analysisResults?.overall_risk_score || 'N/A'}\nAnalysis Mode: ${currentAnalysisMode}\n\nView full results: ${window.location.href}`;
+           
+           navigator.clipboard.writeText(shareText).then(() => {
+               showToast('Results copied to clipboard', 'success');
+           }).catch(() => {
+               showToast('Failed to copy to clipboard', 'error');
+           });
+       }
+       
+       function analyzeAnother() {
+           if (confirm('Start a new analysis? Current results will be cleared.')) {
+               clearAnalysis();
+               document.getElementById('textInput').focus();
+           }
+       }
+       
+       function saveToProject() {
+           if (!analysisResults) {
+               showToast('No analysis results to save', 'error');
+               return;
+           }
+           
+           // This would integrate with a project management system
+           showToast('Project integration coming soon!', 'info');
+       }
+       
+       // State management
+       function saveAnalysisState() {
+           const state = {
+               mode: currentAnalysisMode,
+               results: analysisResults,
+               timestamp: Date.now()
+           };
+           
+           localStorage.setItem('guardian_analysis_state', JSON.stringify(state));
+       }
+       
+       function loadSavedState() {
+           try {
+               const saved = localStorage.getItem('guardian_analysis_state');
+               if (saved) {
+                   const state = JSON.parse(saved);
+                   
+                   // Only load if less than 1 hour old
+                   if (Date.now() - state.timestamp < 3600000) {
+                       if (state.results) {
+                           analysisResults = state.results;
+                           // Optionally auto-display results
+                           // displayResults(analysisResults);
+                       }
+                   }
+               }
+           } catch (error) {
+               console.warn('Failed to load saved state:', error);
+           }
+       }
+       
+       // Keyboard shortcuts
+       document.addEventListener('keydown', function(e) {
+           // Ctrl+Enter to analyze
+           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+               e.preventDefault();
+               if (!document.getElementById('analyzeBtn').disabled) {
+                   performAnalysis();
+               }
+           }
+           
+           // Ctrl+N for new analysis
+           if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+               e.preventDefault();
+               clearAnalysis();
+           }
+           
+           // Ctrl+E for example
+           if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+               e.preventDefault();
+               loadExample();
+           }
+       });
+       
+       // Utility functions for UI feedback
+       function showToast(message, type = 'info') {
+           // Create toast element
+           const toast = document.createElement('div');
+           toast.className = `toast toast-${type}`;
+           toast.style.cssText = `
+               position: fixed;
+               top: 20px;
+               right: 20px;
+               background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+               color: white;
+               padding: 12px 20px;
+               border-radius: 8px;
+               z-index: 10000;
+               font-size: 14px;
+               font-weight: 500;
+               box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+               animation: slideInRight 0.3s ease-out;
+               max-width: 300px;
+               display: flex;
+               align-items: center;
+               gap: 8px;
+           `;
+           
+           const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : type === 'warning' ? '⚠' : 'ℹ';
+           toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+           
+           document.body.appendChild(toast);
+           
+           // Auto remove after 4 seconds
+           setTimeout(() => {
+               toast.style.animation = 'slideOutRight 0.3s ease-in';
+               setTimeout(() => {
+                   if (toast.parentNode) {
+                       toast.parentNode.removeChild(toast);
+                   }
+               }, 300);
+           }, 4000);
+       }
+       
+       function showGlobalLoading(message = 'Loading...') {
+           const loader = document.createElement('div');
+           loader.id = 'globalLoader';
+           loader.style.cssText = `
+               position: fixed;
+               top: 0;
+               left: 0;
+               width: 100%;
+               height: 100%;
+               background: rgba(0,0,0,0.5);
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               z-index: 10000;
+               color: white;
+               font-size: 18px;
+               font-weight: 500;
+           `;
+           
+           loader.innerHTML = `
+               <div style="text-align: center;">
+                   <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                   <div>${message}</div>
+               </div>
+           `;
+           
+           document.body.appendChild(loader);
+       }
+       
+       function hideGlobalLoading() {
+           const loader = document.getElementById('globalLoader');
+           if (loader) {
+               loader.remove();
+           }
+       }
+       
+       // Add CSS animations
+       const style = document.createElement('style');
+       style.textContent = `
+           @keyframes slideInRight {
+               from { transform: translateX(100%); opacity: 0; }
+               to { transform: translateX(0); opacity: 1; }
+           }
+           
+           @keyframes slideOutRight {
+               from { transform: translateX(0); opacity: 1; }
+               to { transform: translateX(100%); opacity: 0; }
+           }
+           
+           @keyframes spin {
+               to { transform: rotate(360deg); }
+           }
+       `;
+       document.head.appendChild(style);
+       
+       console.log('✅ Analysis page JavaScript loaded successfully');
+   </script>
 {% endblock %}
