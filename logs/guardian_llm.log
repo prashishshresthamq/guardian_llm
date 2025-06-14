@@ -6161,3 +6161,172 @@ jinja2.exceptions.UndefinedError: 'jinja2.runtime.TemplateReference object' has 
 2025-06-14 18:38:06,736 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:260]
 2025-06-14 18:38:17,786 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
 2025-06-14 18:38:17,793 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:260]
+2025-06-14 19:00:08,729 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:00:08,740 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:00:20,136 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:00:20,145 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:00:30,101 ERROR: Get papers error: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:847]
+2025-06-14 19:00:30,180 ERROR: Stats error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1004]
+2025-06-14 19:01:19,040 ERROR: Get papers error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:847]
+2025-06-14 19:01:19,049 ERROR: Stats error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1004]
+2025-06-14 19:10:40,752 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:10:40,763 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:10:52,354 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:10:52,362 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:10:57,896 ERROR: Stats error: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1004]
+2025-06-14 19:10:57,913 ERROR: Get papers error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:847]
+2025-06-14 19:11:16,390 ERROR: Stats error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1004]
+2025-06-14 19:11:17,098 ERROR: Get papers error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:847]
+2025-06-14 19:12:57,493 ERROR: Stats error: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[Analysis(analyses)]'. Original exception was: Error creating backref 'analysis' on relationship 'Analysis.feedback': property of that name exists on mapper 'Mapper[Feedback(feedback)]' [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1004]
+2025-06-14 19:17:03,208 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:17:03,219 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:17:13,902 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:17:13,909 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:20:53,037 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:20:53,049 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:21:04,259 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:21:04,266 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:23:55,319 INFO: Paper saved with ID: paper_1749856907.250381, Title: 1-s2.0-S1389041716302005-main.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:402]
+2025-06-14 19:24:43,747 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'bias_fairness', 'low', None, '2025-06-14 09:24:43.737589')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:24:43,751 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'safety_security', 'medium', None, '2025-06-14 09:24:43.741720')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:24:43,767 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'dual_use', 'low', None, '2025-06-14 09:24:43.746054')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:24:43,770 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'societal_impact', 'low', None, '2025-06-14 09:24:43.750614')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:24:43,773 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'transparency', 'low', None, '2025-06-14 09:24:43.764708')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:24:43,783 ERROR: Accuracy feedback error: (sqlite3.IntegrityError) NOT NULL constraint failed: feedback.analysis_id
+[SQL: INSERT INTO feedback (analysis_id, paper_id, user_id, feedback_type, rating, comment, is_accurate, risk_category, reported_risk_level, actual_risk_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (None, 'paper_1749856907.250381', None, 'accuracy', None, None, 1, 'privacy_data', 'low', None, '2025-06-14 09:24:43.741418')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:1054]
+2025-06-14 19:33:12,273 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:33:12,282 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:35:01,325 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:35:01,339 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:35:12,903 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 19:35:12,910 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 19:35:46,551 INFO: Paper saved with ID: paper_1749857741.312801, Title: bender-2024-resisting-dehumanization-in-the-age-of-ai.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:402]
+2025-06-14 20:37:13,979 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 20:37:13,990 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 20:37:24,726 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 20:37:24,735 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 20:38:19,924 INFO: Paper saved with ID: paper_1749861494.794356, Title: 1-s2.0-S1389041716302005-main.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:402]
+2025-06-14 21:06:27,855 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 21:06:27,886 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 21:06:53,797 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 21:06:53,812 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 21:07:17,834 ERROR: Paper analysis error: 'GuardianEngine' object has no attribute '_get_recommendations'
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py", line 274, in analyze_paper
+    results = guardian_engine.analyze_text(full_text)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 193, in analyze_text
+    risk_assessments = self._generate_risk_assessments_with_cot(
+        text, processed_text, risk_analysis, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 622, in _generate_risk_assessments_with_cot
+    dynamic_recommendations = self._generate_dynamic_recommendations(
+        category, score, all_evidence, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 809, in _generate_dynamic_recommendations
+    recommendations = self._get_recommendations(category, score)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute '_get_recommendations'. Did you mean: '_generate_recommendations'?
+ [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:429]
+2025-06-14 21:07:47,646 INFO: Paper saved with ID: paper_1749863265.709566, Title: 1-s2.0-S1389041716302005-main.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:404]
+2025-06-14 21:08:24,675 INFO: Paper saved with ID: paper_1749863302.523674, Title: 1-s2.0-S1389041716302005-main.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:404]
+2025-06-14 21:09:20,021 ERROR: Paper analysis error: 'GuardianEngine' object has no attribute '_get_recommendations'
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py", line 274, in analyze_paper
+    results = guardian_engine.analyze_text(full_text)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 193, in analyze_text
+    risk_assessments = self._generate_risk_assessments_with_cot(
+        text, processed_text, risk_analysis, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 622, in _generate_risk_assessments_with_cot
+    dynamic_recommendations = self._generate_dynamic_recommendations(
+        category, score, all_evidence, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 809, in _generate_dynamic_recommendations
+    recommendations = self._get_recommendations(category, score)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute '_get_recommendations'. Did you mean: '_generate_recommendations'?
+ [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:429]
+2025-06-14 21:17:47,748 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 21:17:47,759 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 21:17:58,568 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 21:17:58,577 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 21:27:01,253 ERROR: Paper analysis error: 'GuardianEngine' object has no attribute '_get_recommendations'
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py", line 274, in analyze_paper
+    results = guardian_engine.analyze_text(full_text)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 193, in analyze_text
+    risk_assessments = self._generate_risk_assessments_with_cot(
+        text, processed_text, risk_analysis, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 622, in _generate_risk_assessments_with_cot
+    dynamic_recommendations = self._generate_dynamic_recommendations(
+        category, score, all_evidence, cot_analysis
+    )
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/guardian_engine.py", line 809, in _generate_dynamic_recommendations
+    recommendations = self._get_recommendations(category, score)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute '_get_recommendations'. Did you mean: '_generate_recommendations'?
+ [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:429]
+2025-06-14 22:56:31,832 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 22:56:31,843 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 22:56:42,381 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 22:56:42,389 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 22:58:15,321 INFO: Paper saved with ID: paper_1749869830.440331, Title: 1-s2.0-S1389041716302005-main.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:427]
+2025-06-14 22:59:17,765 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 22:59:53,327 INFO: Paper saved with ID: paper_1749869986.649654, Title: bender-2024-resisting-dehumanization-in-the-age-of-ai.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:427]
+2025-06-14 23:00:05,103 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 23:00:59,167 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 23:02:21,539 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 23:03:40,033 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 23:04:35,247 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:884]
+2025-06-14 23:06:35,800 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:06:35,811 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:06:46,542 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:06:46,551 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:10:05,715 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:10:05,727 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:10:17,400 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:10:17,411 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:10:41,190 INFO: Paper saved with ID: paper_1749870632.35738, Title: bender-2024-resisting-dehumanization-in-the-age-of-ai.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:427]
+2025-06-14 23:13:34,421 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:13:34,432 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:13:46,589 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:13:46,597 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:14:45,001 ERROR: Get papers error: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:882]
+2025-06-14 23:16:12,107 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:16:12,118 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:16:23,875 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:16:23,883 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:16:28,527 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:842]
+2025-06-14 23:16:35,089 INFO: Found 43 papers [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:866]
+2025-06-14 23:16:47,942 ERROR: Error processing paper paper_1749870632.35738: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:878]
+2025-06-14 23:18:29,890 ERROR: Error processing paper paper_1749869986.649654: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:878]
+2025-06-14 23:18:29,897 ERROR: Error processing paper paper_1749869830.440331: Expecting value: line 1 column 1 (char 0) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:878]
+2025-06-14 23:18:44,198 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:18:44,207 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:22:16,759 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:22:16,770 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:22:28,012 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-14 23:22:28,021 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-14 23:23:02,091 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:842]
+2025-06-14 23:23:02,195 INFO: Found 43 papers [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:866]
+2025-06-14 23:23:56,682 INFO: Paper saved with ID: paper_1749871425.58004, Title: Media_Presentation_Description.docx [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:427]
+2025-06-14 23:24:37,379 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:842]
+2025-06-14 23:24:37,388 INFO: Found 44 papers [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:866]

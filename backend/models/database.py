@@ -30,15 +30,20 @@ class Paper(db.Model):
     
     def to_dict(self):
         """Convert paper to dictionary"""
+        try:
+            authors_list = json.loads(self.authors) if self.authors else []
+        except json.JSONDecodeError:
+            authors_list = self.authors if isinstance(self.authors, list) else []
+        
         return {
             'paper_id': self.paper_id,
             'title': self.title,
-            'authors': json.loads(self.authors) if self.authors else [],
+            'authors': authors_list,
             'abstract': self.abstract,
-            'upload_time': self.upload_time.isoformat(),
             'overall_risk_score': self.overall_risk_score,
-            'processing_time': self.processing_time,
-            'status': self.status
+            'upload_time': self.upload_time.isoformat() if self.upload_time else None,
+            'status': self.status,
+            'processing_time': self.processing_time
         }
 
 
@@ -68,6 +73,7 @@ class RiskResult(db.Model):
             'evidence': json.loads(self.evidence) if self.evidence else [],
             'recommendations': json.loads(self.recommendations) if self.recommendations else []
         }
+        
 
 
 class SystemStats(db.Model):
@@ -166,8 +172,9 @@ class Analysis(db.Model):
     
     # Relationships
     risk_detections = db.relationship('RiskDetection', backref='analysis', lazy='dynamic', cascade='all, delete-orphan')
-    feedback = db.relationship('Feedback', backref='analysis', lazy='dynamic', cascade='all, delete-orphan')
     
+    feedback = db.relationship('Feedback', backref='analysis_record', lazy='dynamic', foreign_keys='Feedback.analysis_id')
+
     def __init__(self, **kwargs):
         super(Analysis, self).__init__(**kwargs)
         if 'analysis_id' not in kwargs:
@@ -239,30 +246,41 @@ class RiskDetection(db.Model):
 
 
 class Feedback(db.Model):
-    """User feedback on analysis results"""
+    """User feedback on analysis accuracy"""
     __tablename__ = 'feedback'
     
     id = db.Column(db.Integer, primary_key=True)
-    analysis_id = db.Column(db.Integer, db.ForeignKey('analyses.id'), nullable=False)
+    analysis_id = db.Column(db.Integer, db.ForeignKey('analyses.id'), nullable=True)  # Made nullable
+    paper_id = db.Column(db.String(100), db.ForeignKey('papers.paper_id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    feedback_type = db.Column(db.String(50), nullable=False)  # 'accuracy', 'usefulness', 'false_positive', etc.
-    rating = db.Column(db.Integer)  # 1-5 scale
+    feedback_type = db.Column(db.String(50), default='accuracy')
+    rating = db.Column(db.Integer)  # 1-5 rating
     comment = db.Column(db.Text)
-    is_accurate = db.Column(db.Boolean)
+    is_accurate = db.Column(db.Boolean)  # True if user confirms accuracy
+    risk_category = db.Column(db.String(50))  # Which risk category feedback is for
+    reported_risk_level = db.Column(db.String(20))  # What we predicted
+    actual_risk_level = db.Column(db.String(20))  # What user says it should be
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Remove the duplicate relationship or rename it
+    # analysis = db.relationship('Analysis', backref='feedbacks')  # REMOVE THIS LINE
+    user = db.relationship('User', backref='feedbacks')
+    
     def to_dict(self):
-        """Convert feedback to dictionary"""
         return {
             'id': self.id,
             'analysis_id': self.analysis_id,
+            'paper_id': self.paper_id,
+            'user_id': self.user_id,
             'feedback_type': self.feedback_type,
             'rating': self.rating,
             'comment': self.comment,
             'is_accurate': self.is_accurate,
-            'created_at': self.created_at.isoformat()
+            'risk_category': self.risk_category,
+            'reported_risk_level': self.reported_risk_level,
+            'actual_risk_level': self.actual_risk_level,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
-
 
 # Database utilities
 def init_db(app):

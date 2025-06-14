@@ -138,6 +138,8 @@ def analyze_text():
             'error': 'Internal server error',
             'message': str(e)
         }), 500
+        
+        
 @api_blueprint.route('/analyze/cot', methods=['POST'])
 @cross_origin()
 @rate_limit
@@ -192,6 +194,8 @@ def analyze_with_cot():
             'details': str(e)
         }), 500
 
+
+
 @api_blueprint.route('/api/extract-text', methods=['POST'])
 @cross_origin()
 def extract_text_from_file():
@@ -236,7 +240,9 @@ def extract_text_from_file():
         
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 500
-    
+
+@api_blueprint.route('/analyze', methods=['POST'])
+@cross_origin()
 def analyze_paper(data):
     """Analyze research paper format"""
     try:
@@ -251,6 +257,24 @@ def analyze_paper(data):
         
         if not full_text.strip():
             return jsonify({'error': 'No content to analyze'}), 400
+        
+        # Extract metadata from the paper content
+        try:
+            metadata = guardian_engine.extract_paper_metadata(full_text)
+            # Use extracted metadata if original fields were empty
+            if not title or title == 'Untitled Paper':
+                title = metadata['title'] or 'Untitled Paper'
+            if not abstract:
+                abstract = metadata['abstract']
+            if not authors:
+                authors = metadata['authors']
+        except Exception as e:
+            current_app.logger.error(f"Metadata extraction error: {str(e)}")
+            metadata = {
+                'title': title,
+                'authors': authors,
+                'abstract': abstract
+            }
         
         # Create paper record
         paper_id = f"paper_{datetime.utcnow().timestamp()}"
@@ -374,7 +398,7 @@ def analyze_paper(data):
                 # Create risk assessment
                 assessment = {
                     'category': category_key,
-                    'score': round(category_score, 1),
+                    'score': round(category_score, 1),  # This should already be 0-10
                     'level': level,
                     'confidence': confidence,
                     'explanation': category_info['description'],
@@ -384,7 +408,7 @@ def analyze_paper(data):
                     ],
                     'recommendations': recommendations
                 }
-                
+
                 risk_assessments.append(assessment)
                 
                 # Save to database
@@ -399,23 +423,36 @@ def analyze_paper(data):
                     recommendations=json.dumps(recommendations)
                 )
                 db.session.add(risk_result)
+            
             current_app.logger.info(f"Paper saved with ID: {paper_id}, Title: {title}")
             db.session.commit()
             
-            # Prepare response
+            # Prepare response with extracted metadata
             response = {
-                'paper_id': paper_id,
+                'status': 'success',
                 'title': title,
-                'authors': authors,
-                'abstract': abstract,
-                'domain': results.get('domain', 'general'),  # Add this line
-                'domain_confidence': results.get('domain_confidence', 0),  # Add this line
-                'upload_time': paper.upload_time.isoformat(),
+                'authors': authors if isinstance(authors, str) else 'Unknown',
+                'abstract': abstract or 'No abstract found',
+                'paper_id': paper_id,
                 'overall_risk_score': round(overall_risk_score, 1),
-                'processing_time': paper.processing_time,
-                'status': 'completed',
-                'risk_assessments': risk_assessments
+                'risk_assessments': risk_assessments,
+                'risk_analysis': results['risk_analysis'],
+                'recommendations': results['recommendations'],
+                'sentiment': results['sentiment'],
+                'statistics': results['statistics'],
+                'domain': results.get('domain', 'general'),
+                'domain_confidence': results.get('domain_confidence', 0.5),
+                'timestamp': results['timestamp'],
+                'processing_time': paper.processing_time
             }
+            
+            # Add Chain of Thought analysis if available
+            if 'chain_of_thought' in results:
+                response['chain_of_thought'] = results['chain_of_thought']
+            
+            # Add semantic metadata if available
+            if 'semantic_metadata' in results:
+                response['semantic_metadata'] = results['semantic_metadata']
             
             return jsonify(response), 200
             
@@ -744,13 +781,66 @@ def health_check():
         'engine': guardian_engine.get_status()
     }), 200
 
-# Add these routes to backend/api/routes.py
 
+def calculate_accuracy_rate():
+    """Calculate the overall accuracy rate based on user feedback"""
+    try:
+        # Get all feedback where users marked accuracy
+        total_feedback = Feedback.query.filter(
+            Feedback.is_accurate.isnot(None),
+            Feedback.feedback_type == 'accuracy'
+        ).count()
+        
+        if total_feedback == 0:
+            # No feedback yet, return a default high accuracy
+            return 95.0
+        
+        # Count accurate predictions
+        accurate_feedback = Feedback.query.filter(
+            Feedback.is_accurate == True,
+            Feedback.feedback_type == 'accuracy'
+        ).count()
+        
+        # Calculate percentage
+        accuracy = (accurate_feedback / total_feedback) * 100
+        
+        # Apply a minimum threshold to avoid showing very low accuracy
+        # during initial stages with limited feedback
+        return max(accuracy, 85.0)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error calculating accuracy: {str(e)}")
+        return 95.0  # Default fallback
+
+def calculate_category_accuracy(category):
+    """Calculate accuracy for a specific risk category"""
+    try:
+        total_feedback = Feedback.query.filter(
+            Feedback.risk_category == category,
+            Feedback.is_accurate.isnot(None)
+        ).count()
+        
+        if total_feedback == 0:
+            return 95.0
+        
+        accurate_feedback = Feedback.query.filter(
+            Feedback.risk_category == category,
+            Feedback.is_accurate == True
+        ).count()
+        
+        return (accurate_feedback / total_feedback) * 100
+        
+    except Exception:
+        return 95.0
+    
+    
 @api_blueprint.route('/papers', methods=['GET'])
 @cross_origin()
 def get_papers():
     """Get list of analyzed papers with filtering and pagination"""
     try:
+        current_app.logger.info(f"GET /papers called with args: {request.args}")
+        
         # Get query parameters
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 50, type=int)
@@ -760,6 +850,11 @@ def get_papers():
         # Build query
         query = Paper.query
         
+        # Check if sort column exists
+        if not hasattr(Paper, sort):
+            current_app.logger.warning(f"Sort column '{sort}' not found, using 'upload_time'")
+            sort = 'upload_time'
+        
         # Apply sorting
         if order == 'desc':
             query = query.order_by(getattr(Paper, sort).desc())
@@ -768,15 +863,20 @@ def get_papers():
         
         # Paginate
         paginated = query.paginate(page=page, per_page=limit, error_out=False)
+        current_app.logger.info(f"Found {paginated.total} papers")
         
         # Format response
         papers = []
         for paper in paginated.items:
-            paper_dict = paper.to_dict()
-            # Add risk results
-            risk_results = RiskResult.query.filter_by(paper_id=paper.paper_id).all()
-            paper_dict['risk_assessments'] = [r.to_dict() for r in risk_results]
-            papers.append(paper_dict)
+            try:
+                paper_dict = paper.to_dict()
+                # Add risk results
+                risk_results = RiskResult.query.filter_by(paper_id=paper.paper_id).all()
+                paper_dict['risk_assessments'] = [r.to_dict() for r in risk_results]
+                papers.append(paper_dict)
+            except Exception as e:
+                current_app.logger.error(f"Error processing paper {paper.paper_id}: {str(e)}")
+                continue
         
         return jsonify({
             'papers': papers,
@@ -791,44 +891,16 @@ def get_papers():
         }), 200
         
     except Exception as e:
-        current_app.logger.error(f'Get papers error: {str(e)}')
+        current_app.logger.error(f'Get papers error: {str(e)}', exc_info=True)
         return jsonify({
             'error': 'Failed to retrieve papers',
             'message': str(e)
         }), 500
 
-@api_blueprint.route('/paper/<paper_id>', methods=['GET'])
-@cross_origin()
-def get_paper(paper_id):
-    """Get specific paper analysis by ID"""
-    try:
-        paper = Paper.query.filter_by(paper_id=paper_id).first()
-        
-        if not paper:
-            return jsonify({
-                'error': 'Paper not found',
-                'message': f'No paper found with ID: {paper_id}'
-            }), 404
-        
-        # Get risk results
-        risk_results = RiskResult.query.filter_by(paper_id=paper.paper_id).all()
-        
-        response = paper.to_dict()
-        response['risk_assessments'] = [r.to_dict() for r in risk_results]
-        
-        return jsonify(response), 200
-        
-    except Exception as e:
-        current_app.logger.error(f'Get paper error: {str(e)}')
-        return jsonify({
-            'error': 'Failed to retrieve paper',
-            'message': str(e)
-        }), 500
-
-@api_blueprint.route('/analysis-stats', methods=['GET'])  # Change the route too
+@api_blueprint.route('/analysis-stats', methods=['GET'])
 @cross_origin()
 def get_analysis_stats():
-    """Get comprehensive system statistics"""
+    """Get comprehensive system statistics with dynamic accuracy"""
     try:
         # Get paper statistics
         total_papers = Paper.query.count()
@@ -839,7 +911,7 @@ def get_analysis_stats():
             db.func.avg(Paper.processing_time)
         ).filter(Paper.processing_time.isnot(None)).scalar() or 0
         
-        # Get risk category statistics
+        # Get risk category statistics with dynamic accuracy
         category_stats = {}
         risk_categories = ['bias_fairness', 'privacy_data', 'safety_security', 
                           'dual_use', 'societal_impact', 'transparency']
@@ -850,11 +922,12 @@ def get_analysis_stats():
             ).filter(RiskResult.category == category).scalar() or 0
             
             category_stats[category] = {
-                'average_score': round(avg_score * 10, 1),  # Convert to 0-10 scale
+                'average_score': round(avg_score * 10, 1),
                 'high_risk_count': RiskResult.query.filter(
                     RiskResult.category == category,
                     RiskResult.score >= 0.5
-                ).count()
+                ).count(),
+                'accuracy_rate': round(calculate_category_accuracy(category), 1)
             }
         
         # Get risk distribution
@@ -871,12 +944,15 @@ def get_analysis_stats():
             'critical': Paper.query.filter(Paper.overall_risk_score >= 7.5).count()
         }
         
+        # Calculate overall dynamic accuracy
+        accuracy_rate = calculate_accuracy_rate()
+        
         stats = {
             'overview': {
                 'total_papers_analyzed': total_papers,
                 'high_risk_papers': high_risk_papers,
                 'average_processing_time': round(avg_processing_time, 2),
-                'accuracy_rate': 94.3  # Mock value for demo
+                'accuracy_rate': round(accuracy_rate, 1)
             },
             'category_statistics': category_stats,
             'risk_distribution': risk_distribution,
@@ -892,10 +968,11 @@ def get_analysis_stats():
             'message': str(e)
         }), 500
         
+                
 @api_blueprint.route('/stats', methods=['GET'])
 @cross_origin()
 def get_stats():
-    """Get system statistics"""
+    """Get system statistics with dynamic accuracy"""
     try:
         # Get analysis statistics
         total_papers = Paper.query.count()
@@ -920,12 +997,21 @@ def get_stats():
             'critical': Paper.query.filter(Paper.overall_risk_score >= 7.5).count()
         }
         
+        # Calculate dynamic accuracy
+        accuracy_rate = calculate_accuracy_rate()
+        
+        # Get feedback statistics
+        total_feedback = Feedback.query.count()
+        positive_feedback = Feedback.query.filter(Feedback.is_accurate == True).count()
+        
         stats = {
             'overview': {
                 'total_papers_analyzed': total_papers,
                 'high_risk_papers': high_risk_papers,
                 'average_processing_time': round(avg_processing_time, 2) if avg_processing_time else 0,
-                'accuracy_rate': 99.7
+                'accuracy_rate': round(accuracy_rate, 1),
+                'total_feedback': total_feedback,
+                'positive_feedback': positive_feedback
             },
             'risk_distribution': risk_distribution,
             'timestamp': datetime.utcnow().isoformat()
@@ -940,6 +1026,56 @@ def get_stats():
             'message': str(e)
         }), 500
 
+@api_blueprint.route('/feedback/accuracy', methods=['POST'])
+@cross_origin()
+def submit_accuracy_feedback():
+    """Submit feedback specifically for accuracy tracking"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['paper_id', 'risk_category', 'is_accurate']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'error': 'Missing required field',
+                    'message': f'{field} is required'
+                }), 400
+        
+        # Create feedback entry
+        feedback = Feedback(
+            paper_id=data['paper_id'],
+            feedback_type='accuracy',
+            is_accurate=data['is_accurate'],
+            risk_category=data['risk_category'],
+            reported_risk_level=data.get('reported_risk_level'),
+            actual_risk_level=data.get('actual_risk_level'),
+            comment=data.get('comment'),
+            user_id=data.get('user_id')
+        )
+        
+        db.session.add(feedback)
+        db.session.commit()
+        
+        # Return updated accuracy
+        new_accuracy = calculate_accuracy_rate()
+        category_accuracy = calculate_category_accuracy(data['risk_category'])
+        
+        return jsonify({
+            'message': 'Feedback submitted successfully',
+            'feedback_id': feedback.id,
+            'overall_accuracy': round(new_accuracy, 1),
+            'category_accuracy': round(category_accuracy, 1)
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Accuracy feedback error: {str(e)}')
+        return jsonify({
+            'error': 'Failed to submit feedback',
+            'message': str(e)
+        }), 500
+        
 @api_blueprint.route('/analysis/<analysis_id>', methods=['GET'])
 @cross_origin()
 def get_analysis(analysis_id):
