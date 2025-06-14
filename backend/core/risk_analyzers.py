@@ -232,28 +232,98 @@ class RiskAnalyzer:
         return results
     
     def get_risk_evidence(self, text: str, category: str) -> List[str]:
-        """Get evidence for a specific risk category"""
+        """Get specific evidence for a risk category with actual text"""
         evidence = []
         text_lower = text.lower()
+        sentences = text.split('. ')
         
-        # Category-specific keywords
-        category_keywords = {
-            'bias_fairness': ['bias', 'unfair', 'discrimination', 'prejudice'],
-            'privacy_data': ['privacy', 'personal data', 'consent', 'collection'],
-            'safety_security': ['safety', 'security', 'vulnerability', 'risk'],
-            # ... add more categories
+        # Enhanced category-specific keywords with context
+        category_evidence_patterns = {
+            'bias_fairness': {
+                'keywords': ['bias', 'unfair', 'discrimination', 'prejudice', 'disparity', 'inequity'],
+                'contexts': ['algorithm', 'model', 'system', 'decision', 'outcome', 'prediction']
+            },
+            'privacy_data': {
+                'keywords': ['privacy', 'personal data', 'consent', 'collection', 'surveillance', 'tracking'],
+                'contexts': ['user', 'individual', 'customer', 'patient', 'citizen']
+            },
+            'safety_security': {
+                'keywords': ['safety', 'security', 'vulnerability', 'risk', 'failure', 'breach'],
+                'contexts': ['critical', 'system', 'infrastructure', 'operation', 'function']
+            },
+            'dual_use': {
+                'keywords': ['military', 'weapon', 'surveillance', 'dual-use', 'defense'],
+                'contexts': ['application', 'purpose', 'capability', 'technology', 'system']
+            },
+            'societal_impact': {
+                'keywords': ['job loss', 'displacement', 'inequality', 'disruption', 'unemployment'],
+                'contexts': ['worker', 'community', 'society', 'economy', 'industry']
+            },
+            'transparency': {
+                'keywords': ['black box', 'opaque', 'unexplainable', 'interpretability', 'accountability'],
+                'contexts': ['decision', 'process', 'algorithm', 'model', 'system']
+            }
         }
         
-        if category in category_keywords:
-            keywords = category_keywords[category]
-            for keyword in keywords:
-                if keyword in text_lower:
-                    # Find context around keyword
-                    context = self._extract_context_around_keyword(text, keyword)
-                    if context:
-                        evidence.append(f"Detected '{keyword}': {context}")
+        if category in category_evidence_patterns:
+            pattern_info = category_evidence_patterns[category]
+            keywords = pattern_info['keywords']
+            contexts = pattern_info['contexts']
+            
+            # Find sentences with keywords
+            for sentence in sentences:
+                sentence_lower = sentence.lower()
+                
+                for keyword in keywords:
+                    if keyword in sentence_lower:
+                        # Check if context words are nearby
+                        has_context = any(context in sentence_lower for context in contexts)
+                        
+                        # Extract the relevant part of the sentence
+                        if len(sentence) > 150:
+                            # Find keyword position and extract surrounding text
+                            keyword_pos = sentence_lower.find(keyword)
+                            start = max(0, keyword_pos - 50)
+                            end = min(len(sentence), keyword_pos + 100)
+                            excerpt = sentence[start:end].strip()
+                            if start > 0:
+                                excerpt = "..." + excerpt
+                            if end < len(sentence):
+                                excerpt = excerpt + "..."
+                        else:
+                            excerpt = sentence.strip()
+                        
+                        # Format evidence with context
+                        if has_context:
+                            evidence.append(f'High relevance: "{excerpt}" [keyword: {keyword}]')
+                        else:
+                            evidence.append(f'Potential concern: "{excerpt}" [keyword: {keyword}]')
+                        
+                        break  # One evidence per sentence
+                
+                if len(evidence) >= 5:  # Limit evidence pieces
+                    break
         
-        return evidence[:3]  # Return top 3 pieces of evidence
+        # If no specific evidence found, look for general patterns
+        if not evidence:
+            general_patterns = {
+                'bias_fairness': r'different.*groups?|demographic.*difference|fairness',
+                'privacy_data': r'data.*collect|information.*stored|user.*track',
+                'safety_security': r'fail.*safe|security.*measure|critical.*system',
+                'dual_use': r'can be used|potential.*application|adapt.*for',
+                'societal_impact': r'impact.*society|affect.*communit|economic.*consequence',
+                'transparency': r'cannot.*explain|difficult.*understand|complex.*system'
+            }
+            
+            if category in general_patterns:
+                pattern = general_patterns[category]
+                for sentence in sentences[:10]:  # Check first 10 sentences
+                    if re.search(pattern, sentence, re.IGNORECASE):
+                        evidence.append(f'Pattern match: "{sentence[:150]}..."')
+                        if len(evidence) >= 3:
+                            break
+        
+        return evidence
     
     def _extract_context_around_keyword(self, text: str, keyword: str, window: int = 50) -> str:
         """Extract context around a keyword"""

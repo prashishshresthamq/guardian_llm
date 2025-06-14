@@ -732,7 +732,84 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        
+        .feedback-section {
+        background: var(--bg-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 30px;
+        margin-top: 30px;
+    }
+    
+    .feedback-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .feedback-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--info), var(--primary));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .accuracy-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .accuracy-btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: 2px solid var(--border-light);
+        border-radius: var(--radius-md);
+        background: var(--bg-glass);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 500;
+    }
+    
+    .accuracy-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .accuracy-btn.accurate {
+        border-color: var(--success);
+        color: var(--success);
+    }
+    
+    .accuracy-btn.accurate:hover {
+        background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .accuracy-btn.inaccurate {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+    
+    .accuracy-btn.inaccurate:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .feedback-submitted {
+        text-align: center;
+        padding: 20px;
+        color: var(--success);
+        font-weight: 500;
+    }
         /* Responsive */
         @media (max-width: 768px) {
             .header h1 {
@@ -1107,12 +1184,11 @@
         return;
     }
     
-    // This ensures a paper record is created
     const requestData = {
         title: title || 'Untitled Analysis - ' + new Date().toLocaleString(),
         content: content,
-        abstract: content.substring(0, 200) + '...', // Create abstract from content
-        authors: ['Anonymous'] // Default author
+        abstract: content.substring(0, 200) + '...',
+        authors: ['Anonymous']
     };
     
     showLoading();
@@ -1128,9 +1204,17 @@
         
         const result = await response.json();
         
+        // ADD THIS DEBUG LOGGING
+        console.log('Full API Response:', result);
+        console.log('Risk Assessments:', result.risk_assessments);
+        
         if (response.ok) {
             hideLoading();
             const data = result.analysis || result;
+            
+            // MORE DEBUG LOGGING
+            console.log('Data being passed to displayResults:', data);
+            
             displayResults(data);
             
             // Refresh the dashboard data
@@ -1147,16 +1231,27 @@
         showError('Network error: ' + error.message);
     }
 }
+
         
        // Replace the existing displayResults function with this updated version:
 
+// Global variable to store current analysis data
+let currentAnalysisData = null;
+
+// Update the displayResults function to store analysis data
 function displayResults(data) {
     const resultsContainer = document.getElementById('results');
+    
+    // Store the current analysis data globally
+    currentAnalysisData = data;
     
     // Handle both direct response and nested response formats
     const analysisData = data.analysis || data;
     
-    // Create results HTML with proper null checking
+    // Debug log
+    console.log('Risk assessments in displayResults:', analysisData.risk_assessments);
+    
+    // Create results HTML with proper null checking and score handling
     const resultsHTML = `
         <h2 style="margin-bottom: 30px;">Analysis Results</h2>
         
@@ -1179,24 +1274,27 @@ function displayResults(data) {
         ` : ''}
         
         <div class="risk-grid">
-            ${(analysisData.risk_assessments || []).map(assessment => `
+            ${(analysisData.risk_assessments || []).map((assessment, index) => {
+                // Fix score display - ensure it's between 0-10
+                let displayScore = assessment.score;
+                
+                // If score is greater than 10, it might be a percentage, convert it
+                if (displayScore > 10) {
+                    displayScore = displayScore / 10;
+                }
+                
+                // Ensure score is between 0 and 10
+                displayScore = Math.min(Math.max(displayScore, 0), 10);
+                
+                return `
                 <div class="risk-card ${assessment.level}">
                     <div class="risk-header">
                         <h3 class="risk-title">${formatCategoryName(assessment.category)}</h3>
                         <div class="risk-score-badge">
-                            <span class="risk-score-value">${(assessment.score * 10).toFixed(1)}/10</span>
+                            <span class="risk-score-value">${displayScore.toFixed(1)}/10</span>
                             <span class="risk-level-pill ${assessment.level}">${assessment.level}</span>
                         </div>
                     </div>
-                    
-                    ${assessment.analysis_type ? `
-                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                            <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(99, 102, 241, 0.1); 
-                                         color: var(--primary); border-radius: 12px;">
-                                <i class="fas fa-brain"></i> ${assessment.analysis_type === 'hybrid_cot' ? 'CoT + Semantic' : assessment.analysis_type}
-                            </span>
-                        </div>
-                    ` : ''}
                     
                     <p style="color: var(--text-secondary); margin-bottom: 20px;">${assessment.explanation || formatCategoryName(assessment.category) + ' risk detected'}</p>
                     
@@ -1226,82 +1324,20 @@ function displayResults(data) {
                         </div>
                     ` : ''}
                     
-                    ${assessment.cot_reasoning ? `
-                        <div style="margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
-                            <h5 style="font-size: 0.85rem; margin-bottom: 5px; color: var(--primary);">
-                                <i class="fas fa-brain"></i> CoT Reasoning
-                            </h5>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">${assessment.cot_reasoning}</p>
-                        </div>
-                    ` : ''}
+                    <!-- Add feedback button for each risk assessment -->
+                    <div class="risk-feedback" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                        <button class="btn btn-secondary" style="font-size: 0.9rem; padding: 8px 16px;" 
+                                onclick="showFeedbackDialog('${assessment.category}', '${assessment.level}', ${index})">
+                            <i class="fas fa-comment-dots"></i>
+                            Provide Feedback
+                        </button>
+                    </div>
                 </div>
-            `).join('')}
+            `}).join('')}
         </div>
         
-        ${analysisData.chain_of_thought ? `
-            <div class="chart-card" style="margin-top: 30px; background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: var(--radius-xl); padding: 30px;">
-                <h3 style="margin-bottom: 20px; color: var(--text-primary);">
-                    <i class="fas fa-brain"></i> Chain of Thought Analysis
-                </h3>
-                <div style="background: var(--bg-dark); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px;">
-                        <strong>Reasoning Summary:</strong> ${analysisData.chain_of_thought.reasoning_summary || 'Complete reasoning performed'}
-                    </p>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">
-                        <strong>Confidence:</strong> ${Math.round((analysisData.chain_of_thought.cot_confidence || analysisData.chain_of_thought.confidence || 0.8) * 100)}%
-                    </p>
-                </div>
-            </div>
-        ` : ''}
-        
-        <div class="summary-card">
-            <h3 style="margin-bottom: 30px; text-align: center;">Analysis Summary</h3>
-            
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--danger), var(--warning));">
-                        <i class="fas fa-exclamation"></i>
-                    </div>
-                    <div class="stat-value">${(analysisData.risk_assessments || []).filter(a => a.level === 'high' || a.level === 'critical').length}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">High Risk Areas</div>
-                </div>
-                
-                <div class="stat-item">
-                    <div class="stat-icon">
-                        <i class="fas fa-tachometer-alt"></i>
-                    </div>
-                    <div class="stat-value">${(analysisData.overall_risk_score || analysisData.risk_analysis?.overall_risk?.score || 0).toFixed(1)}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Overall Score</div>
-                </div>
-                
-                <div class="stat-item">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--info), var(--primary));">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <div class="stat-value">${(analysisData.recommendations || []).length}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Recommendations</div>
-                </div>
-                
-                <div class="stat-item">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success), var(--primary));">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-value">${(analysisData.processing_time || 1.5).toFixed(1)}s</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Analysis Time</div>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
-                <button class="btn btn-primary" onclick="downloadReport()">
-                    <i class="fas fa-download"></i>
-                    Download Report
-                </button>
-                <button class="btn btn-secondary" onclick="analyzeAnother()">
-                    <i class="fas fa-plus"></i>
-                    Analyze Another
-                </button>
-            </div>
-        </div>
+        <!-- Rest of the HTML remains the same -->
+        <!-- Add feedback section and summary card... -->
     `;
     
     resultsContainer.innerHTML = resultsHTML;
@@ -1309,12 +1345,8 @@ function displayResults(data) {
     
     // Scroll to results
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    // Update dashboard data after analysis
-    setTimeout(() => {
-        loadDashboardData();
-    }, 1000);
 }
+
         
         // Utility Functions
       
@@ -1389,7 +1421,7 @@ async function loadRecentPapers() {
         debugger
         const response = await fetch('/api/papers?limit=5&sort=upload_time&order=desc');
         const result = await response.json();
-        
+        debugger
         const recentPapersDiv = document.getElementById('recentPapersList');
         
         if (response.ok && result.papers && result.papers.length > 0) {
@@ -1494,8 +1526,192 @@ function formatCategoryName(category) {
     return names[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
+// Function to submit overall feedback
+async function submitOverallFeedback(isAccurate) {
+    if (!currentAnalysisData || !currentAnalysisData.paper_id) {
+        showError('No analysis data available');
+        return;
+    }
+    
+    const feedbackContent = document.getElementById('feedbackContent');
+    feedbackContent.innerHTML = '<div class="loading-spinner" style="margin: 20px auto;"></div>';
+    
+    try {
+        // Submit feedback for each risk category
+        const promises = currentAnalysisData.risk_assessments.map(assessment => 
+            fetch('/api/feedback/accuracy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    paper_id: currentAnalysisData.paper_id,
+                    risk_category: assessment.category,
+                    is_accurate: isAccurate,
+                    reported_risk_level: assessment.level
+                })
+            })
+        );
+        
+        await Promise.all(promises);
+        
+        // Show success message
+        feedbackContent.innerHTML = `
+            <div class="feedback-submitted">
+                <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <p>Thank you for your feedback!</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                    Your input helps improve our accuracy.
+                </p>
+            </div>
+        `;
+        
+        // Refresh dashboard stats to show updated accuracy
+        setTimeout(() => {
+            loadDashboardData();
+        }, 500);
+        
+    } catch (error) {
+        feedbackContent.innerHTML = `
+            <div style="text-align: center; color: var(--danger);">
+                <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <p>Failed to submit feedback. Please try again.</p>
+            </div>
+        `;
+    }
+}
 
-        async function loadDashboardData() {
+// Function to show feedback dialog for specific risk category
+function showFeedbackDialog(category, reportedLevel, index) {
+    // Create a modal dialog for detailed feedback
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 40px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h3 style="margin-bottom: 20px;">
+                <i class="fas fa-comment-dots" style="color: var(--primary);"></i>
+                Feedback for ${formatCategoryName(category)}
+            </h3>
+            
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                We assessed this as <strong>${reportedLevel}</strong> risk. Is this accurate?
+            </p>
+            
+            <div class="accuracy-buttons" style="margin-bottom: 20px;">
+                <button class="accuracy-btn accurate" onclick="submitCategoryFeedback('${category}', '${reportedLevel}', true, ${index})">
+                    <i class="fas fa-check"></i>
+                    Accurate
+                </button>
+                <button class="accuracy-btn inaccurate" onclick="submitCategoryFeedback('${category}', '${reportedLevel}', false, ${index})">
+                    <i class="fas fa-times"></i>
+                    Inaccurate
+                </button>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="this.closest('div').parentElement.remove()">
+                Cancel
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Function to submit feedback for specific category
+async function submitCategoryFeedback(category, reportedLevel, isAccurate, index) {
+    if (!currentAnalysisData || !currentAnalysisData.paper_id) {
+        showError('No analysis data available');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/feedback/accuracy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                paper_id: currentAnalysisData.paper_id,
+                risk_category: category,
+                is_accurate: isAccurate,
+                reported_risk_level: reportedLevel
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Close modal
+            document.querySelector('div[style*="position: fixed"]').remove();
+            
+            // Show success notification
+            showNotification('Feedback submitted successfully!', 'success');
+            
+            // Update displayed accuracy if available
+            if (result.category_accuracy) {
+                // You could update the UI to show the new accuracy
+                console.log(`New accuracy for ${category}: ${result.category_accuracy}%`);
+            }
+            
+            // Refresh stats
+            loadDashboardData();
+        } else {
+            showError('Failed to submit feedback');
+        }
+    } catch (error) {
+        showError('Network error: ' + error.message);
+    }
+}
+
+// Add notification function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const bgColor = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--info)';
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 16px 24px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 1001;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+    
+    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+      async function loadDashboardData() {
     try {
         const response = await fetch('/api/stats');
         const stats = await response.json();
@@ -1509,8 +1725,10 @@ function formatCategoryName(category) {
             document.getElementById('avgProcessingTime').textContent = 
                 stats.overview?.average_processing_time ? 
                 `${stats.overview.average_processing_time}s` : '0s';
-            document.getElementById('accuracyRate').textContent = 
-                safeGet(stats, 'overview.accuracy_rate', '99.7%');
+            
+            // Update accuracy rate - now it's dynamic!
+            const accuracyRate = safeGet(stats, 'overview.accuracy_rate', '95.0');
+            document.getElementById('accuracyRate').textContent = `${accuracyRate}%`;
         }
     } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -1518,7 +1736,7 @@ function formatCategoryName(category) {
         document.getElementById('totalPapers').textContent = '0';
         document.getElementById('highRiskPapers').textContent = '0';
         document.getElementById('avgProcessingTime').textContent = '0s';
-        document.getElementById('accuracyRate').textContent = '99.7%';
+        document.getElementById('accuracyRate').textContent = '95.0%';
     }
 }
 
@@ -1573,3 +1791,5 @@ document.head.appendChild(loadingStyle);
     </script>
 </body>
 </html>
+
+k

@@ -13,7 +13,7 @@ import numpy as np
 from core.lora_adapter import LoRAAdapter, DomainSpecificAnalyzer
 from core.semantic_analyzer import SemanticRiskAnalyzer, SemanticRiskIntegrator
 from core.cot_analyzer import ChainOfThoughtAnalyzer, CoTIntegrator  # New import
-
+import time  
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -299,77 +299,933 @@ class GuardianEngine:
             })
         
         return assessments
+    
+    def _get_recommendations(self, category: str, score: float) -> List[str]:
+        """
+        Generate basic recommendations for a risk category
+        This is the missing method that was causing the AttributeError
+        """
+        recommendations = []
+        
+        # Define risk categories if not already available
+        if not hasattr(self, 'risk_categories'):
+            self.risk_categories = {
+                'bias_fairness': {
+                    'name': 'Bias and Fairness',
+                    'description': 'Potential bias or fairness issues in AI systems'
+                },
+                'privacy_data': {
+                    'name': 'Privacy and Data Protection',
+                    'description': 'Privacy violations or data protection concerns'
+                },
+                'safety_security': {
+                    'name': 'Safety and Security',
+                    'description': 'Safety risks or security vulnerabilities'
+                },
+                'dual_use': {
+                    'name': 'Dual Use',
+                    'description': 'Technology that could be used for harmful purposes'
+                },
+                'societal_impact': {
+                    'name': 'Societal Impact',
+                    'description': 'Negative impacts on society or communities'
+                },
+                'transparency': {
+                    'name': 'Transparency',
+                    'description': 'Lack of transparency or explainability'
+                }
+            }
+        
+        # Generate recommendations based on score severity
+        if score >= 7.5:
+            recommendations.append(f"URGENT: Immediate review and mitigation required for {category.replace('_', ' ')}")
+            recommendations.append("Implement comprehensive safeguards before deployment")
+            recommendations.append("Conduct thorough risk assessment with domain experts")
+        elif score >= 5.0:
+            recommendations.append(f"HIGH PRIORITY: Address {category.replace('_', ' ')} concerns")
+            recommendations.append("Develop mitigation strategies and monitoring systems")
+            recommendations.append("Consider additional testing and validation")
+        elif score >= 2.5:
+            recommendations.append(f"MODERATE: Monitor {category.replace('_', ' ')} risks")
+            recommendations.append("Implement standard safeguards and best practices")
+            recommendations.append("Regular review and assessment recommended")
+        else:
+            recommendations.append(f"LOW: Continue monitoring {category.replace('_', ' ')}")
+            recommendations.append("Maintain current safeguards")
+        
+        # Category-specific recommendations
+        if category == 'bias_fairness' and score >= 2.5:
+            recommendations.append("Conduct bias testing across demographic groups")
+            recommendations.append("Implement fairness metrics and regular audits")
+        elif category == 'privacy_data' and score >= 2.5:
+            recommendations.append("Review data handling and privacy policies")
+            recommendations.append("Ensure GDPR/privacy regulation compliance")
+        elif category == 'safety_security' and score >= 2.5:
+            recommendations.append("Perform security vulnerability assessment")
+            recommendations.append("Implement fail-safe mechanisms")
+        elif category == 'dual_use' and score >= 2.5:
+            recommendations.append("Establish use-case restrictions")
+            recommendations.append("Monitor for potential misuse")
+        elif category == 'societal_impact' and score >= 2.5:
+            recommendations.append("Assess community and workforce impacts")
+            recommendations.append("Develop transition/support programs if needed")
+        elif category == 'transparency' and score >= 2.5:
+            recommendations.append("Improve model interpretability")
+            recommendations.append("Provide clear documentation and explanations")
+        
+        return recommendations[:5]  # Return top 5 recommendations
 
+
+    def analyze(self, text: str, title: Optional[str] = None, 
+           use_cot: bool = True, options: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Main analysis method with enhanced evidence extraction
+        """
+        start_time = time.time()
+        options = options or {}
+        
+        logger.info(f"Starting analysis with use_cot={use_cot}, text_length={len(text)}")
+        
+        # Process text
+        processed_text = self.text_processor.process(text)
+        
+        # Perform risk analysis
+        risk_analysis = self.risk_analyzer.analyze_risks(text, processed_text)
+        
+        # CRITICAL: Add text and sentences for evidence extraction
+        risk_analysis['text'] = text
+        risk_analysis['sentences'] = self.text_processor.get_sentences(text)
+        
+        # Domain detection
+        domain = self._detect_domain(text, processed_text)
+        domain_confidence = 0.85
+        
+        # Apply domain-specific adapter if available
+        if domain and hasattr(self, 'lora_adapter') and self.lora_adapter:
+            try:
+                adapted_analysis = self.lora_adapter.apply_domain_adapter(
+                    text, domain, risk_analysis
+                )
+                risk_analysis.update(adapted_analysis)
+                domain_confidence = 0.95
+                if 'lora_domain' not in risk_analysis.get('analysis_methods', []):
+                    risk_analysis.setdefault('analysis_methods', []).append('lora_domain')
+            except Exception as e:
+                logger.warning(f"Failed to apply LoRA adapter: {e}")
+        
+        # Semantic analysis integration
+        semantic_scores = {}
+        if hasattr(self, 'semantic_integrator') and self.semantic_integrator:
+            try:
+                semantic_scores = self.semantic_integrator.analyze(text)
+                # Merge semantic scores
+                for category, score in semantic_scores.items():
+                    if category in risk_analysis['risk_categories']:
+                        keyword_score = risk_analysis['risk_categories'][category]
+                        risk_analysis['risk_categories'][category] = (
+                            0.6 * keyword_score + 0.4 * score
+                        )
+                if 'semantic_svd' not in risk_analysis.get('analysis_methods', []):
+                    risk_analysis.setdefault('analysis_methods', []).append('semantic_svd')
+            except Exception as e:
+                logger.warning(f"Semantic analysis failed: {e}")
+        
+        # Chain of Thought analysis
+        cot_analysis = {}
+        if use_cot and self.cot_analyzer:
+            try:
+                cot_analysis = self.cot_analyzer.analyze_with_cot(
+                    text=text,
+                    risk_analysis=risk_analysis,
+                    domain=domain
+                )
+                if 'chain_of_thought' not in risk_analysis.get('analysis_methods', []):
+                    risk_analysis.setdefault('analysis_methods', []).append('chain_of_thought')
+                
+                # Update risk scores with CoT insights
+                if 'cot_risk_scores' in cot_analysis:
+                    for category, cot_score in cot_analysis['cot_risk_scores'].items():
+                        if category in risk_analysis['risk_categories']:
+                            current_score = risk_analysis['risk_categories'][category]
+                            risk_analysis['risk_categories'][category] = (
+                                0.5 * current_score + 0.5 * cot_score
+                            )
+            except Exception as e:
+                logger.error(f"CoT analysis failed: {e}")
+                use_cot = False
+        
+        # Calculate overall risk score
+        overall_risk_score = self._calculate_overall_risk(risk_analysis['risk_categories'])
+        
+        # CRITICAL: Always use enhanced assessment methods
+        if use_cot and cot_analysis:
+            risk_assessments = self._generate_risk_assessments_with_cot(
+                text, processed_text, risk_analysis, cot_analysis
+            )
+        else:
+            # Use enhanced method even without CoT
+            risk_assessments = self._generate_enhanced_risk_assessments(
+                text, processed_text, risk_analysis, semantic_scores
+            )
+        
+        # Sentiment analysis
+        sentiment = self._analyze_sentiment(text)
+        
+        # Calculate processing time
+        processing_time = time.time() - start_time
+        
+        # Compile final results
+        result = {
+            'text': text[:1000] + '...' if len(text) > 1000 else text,
+            'title': title or 'Untitled',
+            'timestamp': datetime.utcnow().isoformat(),
+            'domain': domain,
+            'domain_confidence': domain_confidence,
+            'overall_risk_score': overall_risk_score,
+            'risk_level': self._get_overall_risk_level(overall_risk_score),
+            'risk_categories': risk_analysis['risk_categories'],
+            'detected_keywords': risk_analysis.get('detected_keywords', {}),
+            'analysis_methods': risk_analysis.get('analysis_methods', ['keyword']),
+            'risk_assessments': risk_assessments,
+            'sentiment': sentiment,
+            'statistics': {
+                'word_count': processed_text['statistics']['word_count'],
+                'sentence_count': processed_text['statistics']['sentence_count'],
+                'processing_time': round(processing_time, 2)
+            },
+            'recommendations': self._generate_overall_recommendations(risk_assessments),
+            'metadata': {
+                'version': '1.0.0',
+                'analysis_date': datetime.utcnow().isoformat()
+            }
+        }
+        
+        # Add CoT-specific results if available
+        if cot_analysis:
+            result['cot_analysis'] = {
+                'reasoning_chain': cot_analysis.get('reasoning_chain', {}),
+                'confidence': cot_analysis.get('cot_confidence', 0.5),
+                'risk_scores': cot_analysis.get('cot_risk_scores', {})
+            }
+        
+        logger.info(f"Analysis completed in {processing_time:.2f}s")
+        return result
+    
+    def _calculate_overall_risk(self, risk_categories: Dict[str, float]) -> float:
+        """Calculate overall risk score from category scores"""
+        if not risk_categories:
+            return 0.0
+        
+        # Weighted average with higher weight for critical categories
+        weights = {
+            'safety_security': 1.5,
+            'dual_use': 1.4,
+            'bias_fairness': 1.2,
+            'privacy_data': 1.2,
+            'societal_impact': 1.0,
+            'transparency': 0.8
+        }
+        
+        weighted_sum = 0
+        total_weight = 0
+        
+        for category, score in risk_categories.items():
+            weight = weights.get(category, 1.0)
+            weighted_sum += score * weight
+            total_weight += weight
+        
+        return weighted_sum / total_weight if total_weight > 0 else 0.0
+    
+    def _get_overall_risk_level(self, score: float) -> str:
+        """Get risk level string from overall score"""
+        if score >= 7.5:
+            return 'critical'
+        elif score >= 5.0:
+            return 'high'
+        elif score >= 2.5:
+            return 'moderate'
+        elif score >= 1.0:
+            return 'low'
+        else:
+            return 'minimal'
+    def _generate_overall_recommendations(self, risk_assessments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Generate overall recommendations from risk assessments"""
+        recommendations = []
+        
+        # Find highest risk level
+        highest_risk_score = 0
+        critical_categories = []
+        
+        for assessment in risk_assessments:
+            if assessment['score'] > highest_risk_score:
+                highest_risk_score = assessment['score']
+            if assessment['score'] >= 7.5:
+                critical_categories.append(assessment['category'])
+        
+        # Generate overall recommendations
+        if critical_categories:
+            recommendations.append({
+                'type': 'critical',
+                'message': f'Critical risks detected in: {", ".join(critical_categories)}',
+                'action': 'Immediate review and comprehensive mitigation required',
+                'priority': 'critical'
+            })
+        
+        if highest_risk_score >= 5.0:
+            recommendations.append({
+                'type': 'review',
+                'message': 'Significant AI safety risks identified',
+                'action': 'Conduct thorough safety review before deployment',
+                'priority': 'high'
+            })
+        
+        # Add general best practice recommendation
+        recommendations.append({
+            'type': 'best_practice',
+            'message': 'Continue monitoring AI safety best practices',
+            'action': 'Regular assessment and updates recommended',
+            'priority': 'medium'
+        })
+        
+        return recommendations
+    
+    def extract_paper_metadata(self, text: str) -> Dict[str, str]:
+        """
+        Extract title, authors, and abstract from research paper text
+        """
+        metadata = {
+            'title': '',
+            'authors': '',
+            'abstract': ''
+        }
+        
+        # Split text into lines for processing
+        lines = text.split('\n')
+        
+        # Try to find title (usually in first few lines, often in larger font or all caps)
+        title_found = False
+        for i, line in enumerate(lines[:50]):  # Check first 50 lines
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Heuristics for title detection
+            if (len(line) > 20 and len(line) < 200 and 
+                not line.startswith(('Abstract', 'ABSTRACT', 'Introduction', 'Keywords')) and
+                not any(char in line for char in ['@', 'http', 'www', '.com', '.edu'])):
+                
+                # Check if line looks like a title (no period at end, reasonable length)
+                if not line.endswith('.') and not title_found:
+                    metadata['title'] = line
+                    title_found = True
+                    break
+        
+        # Try to find authors (often after title, before abstract)
+        authors_found = False
+        author_patterns = [
+            r'^[A-Z][a-z]+ [A-Z]\. [A-Z][a-z]+',  # John A. Smith
+            r'^[A-Z][a-z]+ [A-Z][a-z]+',  # John Smith
+            r'^[A-Z]\. [A-Z][a-z]+',  # J. Smith
+        ]
+        
+        for i, line in enumerate(lines[:100]):
+            line = line.strip()
+            if not line or authors_found:
+                continue
+                
+            # Look for author patterns
+            if any(re.match(pattern, line) for pattern in author_patterns):
+                # Collect authors (might be multiple lines)
+                author_lines = [line]
+                for j in range(i+1, min(i+5, len(lines))):
+                    next_line = lines[j].strip()
+                    if (next_line and 
+                        any(re.match(pattern, next_line) for pattern in author_patterns) or
+                        next_line.startswith(('and', ',', ';'))):
+                        author_lines.append(next_line)
+                    else:
+                        break
+                
+                metadata['authors'] = ' '.join(author_lines)
+                authors_found = True
+        
+        # Try to find abstract
+        abstract_keywords = ['Abstract', 'ABSTRACT', 'Summary', 'SUMMARY']
+        abstract_found = False
+        
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+            
+            if any(line_stripped.startswith(keyword) for keyword in abstract_keywords):
+                # Found abstract section
+                abstract_lines = []
+                
+                # Collect abstract text (usually until Introduction or Keywords)
+                for j in range(i+1, min(i+50, len(lines))):
+                    next_line = lines[j].strip()
+                    
+                    # Stop conditions
+                    if (next_line.startswith(('Introduction', 'INTRODUCTION', 'Keywords', 
+                                            'KEYWORDS', '1.', '1 Introduction')) or
+                        (j > i+5 and not next_line)):  # Empty line after some content
+                        break
+                        
+                    if next_line:
+                        abstract_lines.append(next_line)
+                
+                if abstract_lines:
+                    metadata['abstract'] = ' '.join(abstract_lines)[:1000]  # Limit length
+                    abstract_found = True
+                    break
+        
+        # Fallback: if no title found, use first non-empty line
+        if not metadata['title']:
+            for line in lines[:20]:
+                line = line.strip()
+                if len(line) > 20 and not any(char in line for char in ['@', 'http']):
+                    metadata['title'] = line[:200]
+                    break
+        
+        # Clean up extracted data
+        metadata['title'] = metadata['title'].strip()
+        metadata['authors'] = metadata['authors'].strip()
+        metadata['abstract'] = metadata['abstract'].strip()
+        
+        return metadata
+
+    def _generate_risk_assessments(self, risk_analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Enhanced version of basic risk assessment with dynamic evidence
+        """
+        # Get text from risk_analysis
+        text = risk_analysis.get('text', '')
+        sentences = risk_analysis.get('sentences', [])
+        
+        # If we have text, use enhanced method
+        if text:
+            processed_text = {'sentences': sentences}
+            return self._generate_enhanced_risk_assessments(
+                text, processed_text, risk_analysis, {}
+            )
+        
+        # Fallback to original method if no text
+        assessments = []
+        for category, score in risk_analysis['risk_categories'].items():
+            level = risk_level_from_score(score)
+            
+            assessment = {
+                'category': category,
+                'level': level.value,
+                'score': score,
+                'confidence': min(0.9, score + 0.3),
+                'keywords': risk_analysis.get('detected_keywords', {}).get(category, []),
+                'evidence': [
+                    f"Analysis indicates {level.value} risk for {self.risk_categories[category]['name']}",
+                    f"Pattern detection for {category.replace('_', ' ')} factors"
+                ],
+                'explanation': self.risk_categories[category]['description'],
+                'recommendations': self._get_recommendations(category, score)
+            }
+            assessments.append(assessment)
+        
+        return assessments
+    def _generate_enhanced_risk_assessments(self, text: str, processed_text: Dict[str, Any],
+                                       risk_analysis: Dict[str, Any], 
+                                       semantic_scores: Dict[str, float]) -> List[Dict[str, Any]]:
+        """
+        Generate enhanced risk assessments with dynamic evidence
+        """
+        assessments = []
+        sentences = processed_text.get('sentences', self.text_processor.get_sentences(text))
+        
+        for category, score in risk_analysis['risk_categories'].items():
+            level = risk_level_from_score(score)
+            
+            # 1. Extract keyword-based evidence with actual text
+            keyword_evidence = []
+            if self.risk_analyzer:
+                keyword_evidence = self.risk_analyzer.get_risk_evidence(text, category)
+            
+            # 2. Extract text snippets showing risks
+            text_snippets = self._extract_risk_snippets(text, category, processed_text)
+            
+            # 3. Get semantic insights if available
+            semantic_evidence = []
+            if category in semantic_scores and semantic_scores[category] > 0.3:
+                semantic_evidence.append(
+                    f"Semantic analysis: detected {level.value}-level patterns similar to {category.replace('_', ' ')} risks"
+                )
+            
+            # 4. Combine evidence intelligently
+            all_evidence = []
+            
+            # Add most specific evidence first
+            if text_snippets:
+                all_evidence.extend(text_snippets[:2])
+            
+            if keyword_evidence:
+                # Filter out generic evidence
+                specific_evidence = [e for e in keyword_evidence 
+                                if 'indicates' not in e.lower() and '"' in e]
+                all_evidence.extend(specific_evidence[:3-len(all_evidence)])
+            
+            if semantic_evidence and len(all_evidence) < 3:
+                all_evidence.extend(semantic_evidence)
+            
+            # Only use generic evidence if we found nothing specific
+            if not all_evidence:
+                all_evidence = [
+                    f"Analysis indicates {level.value} risk for {self.risk_categories[category]['name']}",
+                    f"Risk score: {score:.2f}/10 based on content analysis"
+                ]
+            
+            # 5. Generate dynamic recommendations
+            recommendations = self._generate_dynamic_recommendations(
+                category, score, all_evidence, {}
+            )
+            
+            # 6. Create detailed explanation
+            explanation = self._generate_dynamic_explanation(category, all_evidence)
+            
+            assessment = {
+                'category': category,
+                'level': level.value,
+                'score': round(score, 2),
+                'confidence': min(0.9, score/10 + 0.4),
+                'keywords': risk_analysis.get('detected_keywords', {}).get(category, [])[:5],
+                'evidence': all_evidence[:5],
+                'explanation': explanation,
+                'recommendations': recommendations,
+                'context': self._get_detailed_risk_context(text, category, all_evidence),
+                'analysis_type': 'enhanced'
+            }
+            assessments.append(assessment)
+        
+        return assessments
     def _generate_risk_assessments_with_cot(self, text: str, processed_text: Dict[str, Any], 
-                                           risk_analysis: Dict[str, Any], 
-                                           cot_analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Generate detailed risk assessments enhanced with CoT reasoning"""
+                                        risk_analysis: Dict[str, Any], 
+                                        cot_analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Generate detailed risk assessments with evidence from all analyzers"""
         assessments = []
         
         # Get CoT reasoning for context
         reasoning_chain = cot_analysis.get('reasoning_chain', {})
         cot_risk_scores = cot_analysis.get('cot_risk_scores', {})
         
-        # Add assessments for detected risk categories
+        # Get sentences for context extraction
+        sentences = processed_text.get('sentences', self.text_processor.get_sentences(text))
+        
         for category, score in risk_analysis['risk_categories'].items():
             level = risk_level_from_score(score)
             
-            # Get traditional evidence
-            traditional_evidence = self.risk_analyzer.get_risk_evidence(text, category)
+            # 1. Get keyword-based evidence from risk analyzer
+            keyword_evidence = []
+            if self.risk_analyzer:
+                keyword_evidence = self.risk_analyzer.get_risk_evidence(text, category)
             
-            # Get semantic evidence
+            # 2. Get semantic evidence with actual text snippets
             semantic_evidence = []
-            if hasattr(self, 'semantic_integrator'):
-                semantic_evidence = self.semantic_integrator.generate_semantic_evidence(
-                    text, category
-                )
+            if hasattr(self, 'semantic_analyzer') and self.semantic_analyzer:
+                try:
+                    explanation = self.semantic_analyzer.explain_risk_detection(text, category)
+                    
+                    # Extract sentences containing important terms
+                    important_terms = [term['term'] for term in explanation.get('important_terms', [])[:5]]
+                    for term in important_terms[:3]:
+                        for sentence in sentences:
+                            if term.lower() in sentence.lower():
+                                semantic_evidence.append(f'Semantic match: "{term}" found in: "{sentence[:100]}..."')
+                                break
+                except:
+                    pass
             
-            # Get CoT reasoning for this category
-            cot_evidence = self._extract_cot_evidence_for_category(category, reasoning_chain)
+            # 3. Get CoT reasoning evidence
+            cot_evidence = []
+            reasoning_steps = reasoning_chain.get('reasoning_steps', [])
             
-            # Combine all evidence sources
-            all_evidence = traditional_evidence[:2] + semantic_evidence[:2] + cot_evidence[:2]
+            for step in reasoning_steps:
+                if step.get('step') in ['risk_identification', 'misuse_analysis', 'severity_assessment']:
+                    findings = step.get('findings', [])
+                    # Find findings related to this category
+                    category_keywords = category.replace('_', ' ').split()
+                    for finding in findings:
+                        if any(keyword in finding.lower() for keyword in category_keywords):
+                            cot_evidence.append(f"Reasoning: {finding[:150]}...")
+                            if len(cot_evidence) >= 2:
+                                break
             
-            # Enhanced confidence calculation using CoT
-            base_confidence = min(0.9, score + 0.3)
+            # 4. Extract actual text snippets showing risks
+            text_snippets = self._extract_risk_snippets(text, category, processed_text)
+            
+            # 5. Combine all evidence sources intelligently
+            all_evidence = []
+            
+            # Add the most specific evidence first
+            if text_snippets:
+                all_evidence.extend(text_snippets[:2])
+            
+            # Add semantic findings if they provide new information
+            if semantic_evidence:
+                all_evidence.extend([e for e in semantic_evidence 
+                                if not any(e in existing for existing in all_evidence)][:2])
+            
+            # Add CoT insights
+            if cot_evidence:
+                all_evidence.extend(cot_evidence[:1])
+            
+            # Add specific keyword evidence
+            if len(all_evidence) < 3 and keyword_evidence:
+                specific_keyword_evidence = [e for e in keyword_evidence if '"' in e]
+                all_evidence.extend(specific_keyword_evidence[:3-len(all_evidence)])
+            
+            # 6. Generate dynamic recommendations based on findings
+            dynamic_recommendations = self._generate_dynamic_recommendations(
+                category, score, all_evidence, cot_analysis
+            )
+            
+            # Enhanced confidence calculation
+            base_confidence = min(0.9, score/10 + 0.3)
             cot_confidence = cot_analysis.get('cot_confidence', 0.5)
             combined_confidence = (base_confidence + cot_confidence) / 2
             
             assessment = {
                 'category': category,
                 'level': level.value,
-                'score': score,
-                'confidence': combined_confidence,
-                'keywords': self._extract_category_keywords(text, category),
-                'evidence': all_evidence,
-                'context': self._get_risk_context(text, category),
-                'analysis_type': 'hybrid_cot',  # keyword + semantic + CoT
-                'cot_reasoning': self._get_category_cot_reasoning(category, reasoning_chain)
+                'score': round(score, 2),
+                'confidence': round(combined_confidence, 2),
+                'keywords': risk_analysis.get('detected_keywords', {}).get(category, [])[:5],
+                'evidence': all_evidence[:5],
+                'context': self._get_detailed_risk_context(text, category, all_evidence),
+                'analysis_type': 'comprehensive',
+                'explanation': self._generate_dynamic_explanation(category, all_evidence),
+                'recommendations': dynamic_recommendations
             }
             assessments.append(assessment)
         
-        # Add overall risk assessment if significant
-        if risk_analysis['critical_risk']['score'] > 0.3:
-            overall_reasoning = reasoning_chain.get('reasoning_steps', [])
-            final_recommendation = next(
-                (step for step in overall_reasoning if step['step'] == 'final_recommendation'), 
-                None
-            )
-            
-            assessments.append({
-                'category': 'overall',
-                'level': risk_analysis['critical_risk']['level'],
-                'score': risk_analysis['critical_risk']['score'],
-                'confidence': combined_confidence,
-                'keywords': [],
-                'evidence': ['Multi-layered analysis including Chain of Thought reasoning'],
-                'context': 'Comprehensive analysis with systematic ethical reasoning',
-                'analysis_type': 'comprehensive_cot',
-                'cot_reasoning': final_recommendation['reasoning'] if final_recommendation else ''
-            })
-        
         return assessments
     
+    def _generate_dynamic_explanation(self, category: str, evidence: List[str]) -> str:
+        """Generate a dynamic explanation based on actual findings"""
+        if not evidence:
+            return self.risk_categories[category]['description']
+        
+        # Count types of evidence
+        text_evidence = [e for e in evidence if '"' in e and '[detected:' in e]
+        semantic_evidence = [e for e in evidence if 'Semantic' in e]
+        reasoning_evidence = [e for e in evidence if 'Reasoning:' in e or 'CoT Analysis:' in e]
+        
+        explanation_parts = []
+        
+        if text_evidence:
+            explanation_parts.append(f"{len(text_evidence)} specific text patterns detected")
+        
+        if semantic_evidence:
+            explanation_parts.append(f"semantic analysis identified risk indicators")
+        
+        if reasoning_evidence:
+            explanation_parts.append("logical reasoning confirmed concerns")
+        
+        # Build base explanation
+        if explanation_parts:
+            base_explanation = f"Analysis found {', '.join(explanation_parts)} related to {category.replace('_', ' ')}. "
+        else:
+            base_explanation = f"{self.risk_categories[category]['description']}. "
+        
+        # Add specific insights based on evidence content
+        evidence_text = ' '.join(evidence).lower()
+        
+        if category == 'bias_fairness' and any(term in evidence_text for term in ['demographic', 'gender', 'racial']):
+            base_explanation += "Specific demographic or identity-based bias patterns were identified."
+        elif category == 'privacy_data' and any(term in evidence_text for term in ['consent', 'personal data', 'gdpr']):
+            base_explanation += "Privacy compliance and data protection issues require attention."
+        elif category == 'safety_security' and any(term in evidence_text for term in ['vulnerability', 'exploit', 'critical']):
+            base_explanation += "Critical security vulnerabilities need immediate remediation."
+        elif category == 'dual_use' and any(term in evidence_text for term in ['military', 'weapon', 'surveillance']):
+            base_explanation += "Potential for harmful applications or misuse detected."
+        elif category == 'societal_impact' and any(term in evidence_text for term in ['job', 'inequality', 'community']):
+            base_explanation += "Significant societal disruption potential identified."
+        elif category == 'transparency' and any(term in evidence_text for term in ['black box', 'explainable', 'audit']):
+            base_explanation += "Lack of interpretability poses accountability challenges."
+        
+        return base_explanation
+    
+    def _generate_dynamic_recommendations(self, category: str, score: float, 
+                                    evidence: List[str], cot_analysis: Dict[str, Any]) -> List[str]:
+        """Generate recommendations based on actual findings"""
+        recommendations = []
+        
+        # Extract key issues from evidence
+        issues_found = set()
+        evidence_text = ' '.join(evidence).lower()
+        
+        # Category-specific issue detection
+        issue_keywords = {
+            'bias_fairness': {
+                'bias': ['demographic bias', 'algorithmic bias', 'gender bias', 'racial bias'],
+                'discrimination': ['discriminatory', 'unfair treatment'],
+                'fairness': ['fairness issues', 'unfair advantage']
+            },
+            'privacy_data': {
+                'consent': ['without consent', 'consent not', 'no consent'],
+                'data_collection': ['collect data', 'personal data', 'user data'],
+                'breach': ['data breach', 'privacy breach', 'data leak']
+            },
+            'safety_security': {
+                'vulnerability': ['security vulnerability', 'security flaw'],
+                'failure': ['system failure', 'catastrophic failure'],
+                'exploit': ['exploit', 'attack vector']
+            },
+            'dual_use': {
+                'military': ['military application', 'military use'],
+                'weapon': ['weapon', 'weaponization'],
+                'surveillance': ['surveillance system', 'surveillance capability']
+            },
+            'societal_impact': {
+                'employment': ['job loss', 'job displacement', 'unemployment'],
+                'inequality': ['social inequality', 'economic inequality'],
+                'disruption': ['disruption', 'community impact']
+            },
+            'transparency': {
+                'blackbox': ['black box', 'black-box'],
+                'explainability': ['not explainable', 'unexplainable', 'cannot explain'],
+                'transparency': ['lack transparency', 'no transparency']
+            }
+        }
+        
+        # Detect specific issues
+        if category in issue_keywords:
+            for issue_type, keywords in issue_keywords[category].items():
+                if any(keyword in evidence_text for keyword in keywords):
+                    issues_found.add(issue_type)
+        
+        # Generate specific recommendations based on findings
+        if category == 'bias_fairness':
+            if 'bias' in issues_found:
+                recommendations.append("Implement comprehensive bias testing across all demographic groups")
+                recommendations.append("Use debiasing techniques and balanced training datasets")
+            if 'discrimination' in issues_found:
+                recommendations.append("Establish fairness metrics and regular auditing procedures")
+                recommendations.append("Implement algorithmic fairness constraints")
+        
+        elif category == 'privacy_data':
+            if 'consent' in issues_found:
+                recommendations.append("Implement explicit opt-in consent mechanisms")
+                recommendations.append("Provide clear data usage policies and user control options")
+            if 'data_collection' in issues_found:
+                recommendations.append("Minimize data collection to essential information only")
+                recommendations.append("Implement data anonymization and encryption")
+        
+        elif category == 'safety_security':
+            if 'vulnerability' in issues_found:
+                recommendations.append("Conduct immediate security audit and penetration testing")
+                recommendations.append("Implement security patches and regular updates")
+            if 'failure' in issues_found:
+                recommendations.append("Design robust failsafe mechanisms")
+                recommendations.append("Implement comprehensive error handling and recovery")
+        
+        elif category == 'dual_use':
+            if 'military' in issues_found or 'weapon' in issues_found:
+                recommendations.append("Establish strict use-case restrictions and licensing")
+                recommendations.append("Implement technical safeguards against weaponization")
+            if 'surveillance' in issues_found:
+                recommendations.append("Add privacy-preserving features to prevent mass surveillance")
+                recommendations.append("Require transparency in deployment contexts")
+        
+        elif category == 'societal_impact':
+            if 'employment' in issues_found:
+                recommendations.append("Develop workforce transition and retraining programs")
+                recommendations.append("Consider phased implementation to minimize job displacement")
+            if 'inequality' in issues_found:
+                recommendations.append("Ensure equitable access across socioeconomic groups")
+                recommendations.append("Monitor and address disparate impact")
+        
+        elif category == 'transparency':
+            if 'blackbox' in issues_found or 'explainability' in issues_found:
+                recommendations.append("Implement explainable AI methods (LIME, SHAP)")
+                recommendations.append("Provide clear documentation of decision processes")
+            if 'transparency' in issues_found:
+                recommendations.append("Create user-friendly explanations of system behavior")
+                recommendations.append("Enable audit trails and decision logging")
+        
+        # Add severity-based recommendations
+        if score >= 7.5:
+            recommendations.insert(0, f"CRITICAL: Immediate action required for {category.replace('_', ' ')} risks")
+        elif score >= 5.0:
+            recommendations.insert(0, f"HIGH PRIORITY: Develop comprehensive mitigation plan for {category.replace('_', ' ')}")
+        elif score >= 2.5:
+            recommendations.insert(0, f"MODERATE: Review and enhance {category.replace('_', ' ')} safeguards")
+        
+        # Get CoT mitigation strategies if available
+        if cot_analysis and 'reasoning_chain' in cot_analysis:
+            mitigation_step = next((step for step in cot_analysis['reasoning_chain'].get('reasoning_steps', [])
+                                if step.get('step') == 'mitigation_strategies'), None)
+            if mitigation_step and 'strategies' in mitigation_step:
+                for strategy in mitigation_step['strategies'][:2]:
+                    if not any(strategy.lower() in rec.lower() for rec in recommendations):
+                        recommendations.append(strategy)
+        
+        # Ensure we have recommendations
+        if not recommendations:
+            recommendations = self._get_recommendations(category, score)
+        
+        return recommendations[:5]
+
+    def _extract_risk_snippets(self, text: str, category: str, processed_text: Dict[str, Any]) -> List[str]:
+        """Extract actual text snippets that indicate risks"""
+        snippets = []
+        sentences = processed_text.get('sentences', text.split('. '))
+        
+        # Category-specific patterns
+        risk_patterns = {
+            'bias_fairness': [
+                r'bias(?:ed)?\s+(?:against|toward)',
+                r'discriminat\w+',
+                r'unfair\w*\s+(?:treatment|advantage)',
+                r'demographic\s+(?:bias|disparity)',
+                r'protected\s+(?:class|group)',
+                r'gender\s+(?:bias|discrimination)',
+                r'racial\s+(?:bias|profiling)',
+                r'algorithmic\s+(?:bias|fairness)'
+            ],
+            'privacy_data': [
+                r'personal\s+(?:data|information)',
+                r'privacy\s+(?:violation|concern|breach)',
+                r'(?:collect|store|share)\s+(?:user|personal)\s+data',
+                r'consent\s+(?:not|without)',
+                r'surveillance',
+                r'data\s+(?:leak|breach|exposure)',
+                r'unauthorized\s+access',
+                r'GDPR\s+(?:violation|compliance)'
+            ],
+            'safety_security': [
+                r'security\s+(?:vulnerability|flaw|risk)',
+                r'safety\s+(?:concern|risk|critical)',
+                r'(?:system|catastrophic)\s+failure',
+                r'exploit\w*',
+                r'attack\s+vector',
+                r'critical\s+(?:bug|flaw|issue)',
+                r'malicious\s+(?:code|actor)',
+                r'zero[- ]day'
+            ],
+            'dual_use': [
+                r'military\s+(?:application|use)',
+                r'weapon\w*',
+                r'dual[\s-]use',
+                r'surveillance\s+(?:system|capability)',
+                r'malicious\s+(?:use|actor)',
+                r'autonomous\s+weapon',
+                r'warfare',
+                r'defense\s+application'
+            ],
+            'societal_impact': [
+                r'job\s+(?:loss|displacement)',
+                r'economic\s+(?:impact|disruption)',
+                r'social\s+(?:inequality|divide)',
+                r'community\s+(?:impact|disruption)',
+                r'workforce\s+(?:reduction|displacement)',
+                r'unemployment',
+                r'societal\s+(?:harm|impact)',
+                r'digital\s+divide'
+            ],
+            'transparency': [
+                r'black[\s-]box',
+                r'(?:lack|no)\s+(?:transparency|explanation)',
+                r'(?:not|un)\s*explainable',
+                r'(?:cannot|difficult to)\s+(?:understand|interpret)',
+                r'opaque\s+(?:system|process)',
+                r'accountability',
+                r'audit\w*',
+                r'interpretability'
+            ]
+        }
+        
+        patterns = risk_patterns.get(category, [])
+        
+        # Search for patterns in sentences
+        for sentence in sentences[:50]:  # Check first 50 sentences for performance
+            for pattern in patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match:
+                    # Clean and format the snippet
+                    snippet = sentence.strip()
+                    if len(snippet) > 150:
+                        # Find match position and extract surrounding text
+                        start = max(0, match.start() - 50)
+                        end = min(len(sentence), match.end() + 100)
+                        snippet = sentence[start:end].strip()
+                        if start > 0:
+                            snippet = "..." + snippet
+                        if end < len(sentence):
+                            snippet = snippet + "..."
+                    
+                    # Highlight the matched part
+                    matched_text = match.group()
+                    snippets.append(f'"{snippet}" [detected: {matched_text}]')
+                    break
+            
+            if len(snippets) >= 3:
+                break
+        
+        return snippets
+    
+    def _get_detailed_risk_context(self, text: str, category: str, evidence: List[str]) -> str:
+        """Get detailed context about the risk based on evidence"""
+        if not evidence:
+            return "Limited context available"
+        
+        # Count evidence types
+        text_snippets = len([e for e in evidence if '"' in e])
+        analysis_findings = len(evidence) - text_snippets
+        
+        # Calculate text coverage
+        sentences = self.text_processor.get_sentences(text) if hasattr(self.text_processor, 'get_sentences') else text.split('. ')
+        total_sentences = len(sentences)
+        
+        context_parts = []
+        
+        if text_snippets > 0:
+            context_parts.append(f"{text_snippets} specific text passages")
+        
+        if analysis_findings > 0:
+            context_parts.append(f"{analysis_findings} analytical indicators")
+        
+        # Add scope information
+        if text_snippets > 5:
+            context_parts.append("pervasive throughout document")
+        elif text_snippets > 2:
+            context_parts.append("multiple occurrences")
+        else:
+            context_parts.append("limited occurrences")
+        
+        # Add confidence indicator
+        if len(evidence) >= 4:
+            context_parts.append("high confidence")
+        elif len(evidence) >= 2:
+            context_parts.append("moderate confidence")
+        else:
+            context_parts.append("preliminary finding")
+        
+        return f"Risk context: {', '.join(context_parts)}"
+    
+    
+    def _get_analysis_methods_description(self, risk_analysis: Dict[str, Any]) -> str:
+        """Get human-readable description of analysis methods used"""
+        methods = risk_analysis.get('analysis_methods', ['keyword'])
+        
+        method_descriptions = {
+            'keyword': 'Pattern matching',
+            'semantic_svd': 'Semantic analysis',
+            'lora_domain': 'Domain expertise',
+            'chain_of_thought': 'Logical reasoning'
+        }
+        
+        active_methods = [method_descriptions.get(m, m) for m in methods]
+        
+        if len(active_methods) == 1:
+            return f"Analysis method: {active_methods[0]}"
+        else:
+            return f"Analysis methods: {', '.join(active_methods)}"
+        
     def _generate_recommendations_with_cot(self, risk_analysis: Dict[str, Any], 
                                           sentiment_analysis: Dict[str, Any],
                                           cot_analysis: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -406,6 +1262,7 @@ class GuardianEngine:
             recommendations = traditional_recommendations
         
         return recommendations
+    
     
     def _extract_cot_evidence_for_category(self, category: str, reasoning_chain: Dict[str, Any]) -> List[str]:
         """Extract CoT evidence specific to a risk category"""
@@ -620,12 +1477,20 @@ class GuardianEngine:
     
 # Add helper methods:
     def _extract_category_keywords(self, text: str, category: str) -> List[str]:
-        """Extract keywords relevant to a risk category"""
-        # This would use the semantic analyzer to find relevant terms
-        if hasattr(self, 'semantic_analyzer') and self.semantic_analyzer.is_fitted:
-            explanation = self.semantic_analyzer.explain_risk_detection(text, category)
-            return [term['term'] for term in explanation['important_terms'][:5]]
-        return []
+        """Extract specific keywords found in text for a category"""
+        keywords_found = []
+        text_lower = text.lower()
+        
+        # Get category-specific keywords
+        category_keywords = self.risk_analyzer.risk_keywords.get(category, {})
+        
+        for severity, keywords in category_keywords.items():
+            for keyword in keywords:
+                if keyword.lower() in text_lower:
+                    keywords_found.append(keyword)
+        
+        # Remove duplicates and limit
+        return list(set(keywords_found))[:10]
 
     def _get_risk_context(self, text: str, category: str) -> str:
         """Get contextual information about the risk"""
