@@ -153,6 +153,12 @@ class Analysis(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Add CoT-specific fields
+    cot_reasoning = db.Column(db.Text)  # JSON string for CoT reasoning chain
+    cot_confidence = db.Column(db.Float)
+    cot_risk_scores = db.Column(db.Text)  # JSON string for CoT risk scores
+    reasoning_quality_score = db.Column(db.Float)
+    
     # JSON fields for complex data
     risk_assessments = db.Column(db.Text)  # JSON string
     recommendations = db.Column(db.Text)  # JSON string
@@ -192,7 +198,11 @@ class Analysis(db.Model):
             'status': self.status,
             'created_at': self.created_at.isoformat(),
             'risk_assessments': json.loads(self.risk_assessments) if self.risk_assessments else [],
-            'recommendations': json.loads(self.recommendations) if self.recommendations else []
+            'recommendations': json.loads(self.recommendations) if self.recommendations else [],
+            'cot_reasoning': json.loads(self.cot_reasoning) if self.cot_reasoning else None,
+            'cot_confidence': self.cot_confidence,
+            'cot_risk_scores': json.loads(self.cot_risk_scores) if self.cot_risk_scores else {},
+            'reasoning_quality_score': self.reasoning_quality_score
         }
 
 

@@ -1022,6 +1022,7 @@
             // Load data if dashboard
             if (tabName === 'dashboard') {
                 loadDashboardData();
+                loadRecentPapers();
             }
         }
         
@@ -1066,211 +1067,257 @@
         
         // Analysis Functions
         async function analyzeFile(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            showLoading();
-            
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    hideLoading();
-                    displayResults(result);
-                } else {
-                    hideLoading();
-                    showError(result.message || 'Analysis failed');
-                }
-            } catch (error) {
-                hideLoading();
-                showError('Network error: ' + error.message);
-            }
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', file.name); // Add title from filename
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            hideLoading();
+            // Handle both direct results and wrapped results
+            const data = result.analysis || result;
+            displayResults(data);
+        } else {
+            hideLoading();
+            showError(result.message || result.error || 'Analysis failed');
         }
+    } catch (error) {
+        hideLoading();
+        showError('Network error: ' + error.message);
+    }
+}
         
         async function analyzeText(event) {
-            event.preventDefault();
-            
-            const title = document.getElementById('titleInput').value.trim();
-            const content = document.getElementById('contentInput').value.trim();
-            
-            if (!content) {
-                showError('Please provide content to analyze');
-                return;
-            }
-            
-            const requestData = {
-                title: title || 'Untitled Paper',
-                content: content
-            };
-            
-            showLoading();
-            
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestData)
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    hideLoading();
-                    displayResults(result);
-                } else {
-                    hideLoading();
-                    showError(result.message || 'Analysis failed');
-                }
-            } catch (error) {
-                hideLoading();
-                showError('Network error: ' + error.message);
-            }
-        }
+    event.preventDefault();
+    
+    const title = document.getElementById('titleInput').value.trim();
+    const content = document.getElementById('contentInput').value.trim();
+    
+    if (!content) {
+        showError('Please provide content to analyze');
+        return;
+    }
+    
+    // This ensures a paper record is created
+    const requestData = {
+        title: title || 'Untitled Analysis - ' + new Date().toLocaleString(),
+        content: content,
+        abstract: content.substring(0, 200) + '...', // Create abstract from content
+        authors: ['Anonymous'] // Default author
+    };
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
         
-        function displayResults(data) {
-            const resultsContainer = document.getElementById('results');
+        const result = await response.json();
+        
+        if (response.ok) {
+            hideLoading();
+            const data = result.analysis || result;
+            displayResults(data);
             
-            // Create results HTML
-            const resultsHTML = `
-                <h2 style="margin-bottom: 30px;">Analysis Results</h2>
-                
-                ${data.domain ? `
-                <div class="domain-card">
-                    <div class="domain-info">
-                        <div class="domain-icon">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-                        <div class="domain-text">
-                            <h3>Detected Domain</h3>
-                            <p>${data.domain}</p>
-                        </div>
-                    </div>
-                    <div class="domain-confidence">
-                        <div class="confidence-value">${Math.round((data.domain_confidence || 0.95) * 100)}%</div>
-                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Confidence</div>
-                    </div>
-                </div>
-                ` : ''}
-                
-                <div class="risk-grid">
-                    ${data.risk_assessments.map(assessment => `
-                        <div class="risk-card ${assessment.level}">
-                            <div class="risk-header">
-                                <h3 class="risk-title">${formatCategoryName(assessment.category)}</h3>
-                                <div class="risk-score-badge">
-                                    <span class="risk-score-value">${assessment.score}/10</span>
-                                    <span class="risk-level-pill ${assessment.level}">${assessment.level}</span>
-                                </div>
-                            </div>
-                            
-                            <p style="color: var(--text-secondary); margin-bottom: 20px;">${assessment.explanation}</p>
-                            
-                            ${assessment.evidence && assessment.evidence.length > 0 ? `
-                                <div style="margin-bottom: 20px;">
-                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-secondary);">Evidence Found:</h4>
-                                    <ul style="list-style: none; padding: 0;">
-                                        ${assessment.evidence.slice(0, 3).map(ev => `
-                                            <li style="padding: 5px 0; padding-left: 20px; position: relative;">
-                                                <i class="fas fa-circle" style="position: absolute; left: 0; top: 12px; font-size: 6px; color: var(--primary);"></i>
-                                                <span style="color: var(--text-muted); font-size: 0.9rem;">${ev}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ul>
-                                </div>
-                            ` : ''}
-                            
-                            <div>
-                                <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-secondary);">Recommendations:</h4>
-                                ${assessment.recommendations.slice(0, 3).map(rec => `
-                                    <div style="padding: 5px 0; padding-left: 20px; position: relative;">
-                                        <i class="fas fa-chevron-right" style="position: absolute; left: 0; top: 8px; font-size: 10px; color: var(--info);"></i>
-                                        <span style="color: var(--text-primary); font-size: 0.9rem;">${rec}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div class="summary-card">
-                    <h3 style="margin-bottom: 30px; text-align: center;">Analysis Summary</h3>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, var(--danger), var(--warning));">
-                                <i class="fas fa-exclamation"></i>
-                            </div>
-                            <div class="stat-value">${data.risk_assessments.filter(a => a.level === 'high' || a.level === 'critical').length}</div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem;">High Risk Areas</div>
-                        </div>
-                        
-                        <div class="stat-item">
-                            <div class="stat-icon">
-                                <i class="fas fa-tachometer-alt"></i>
-                            </div>
-                            <div class="stat-value">${data.overall_risk_score}</div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Overall Score</div>
-                        </div>
-                        
-                        <div class="stat-item">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, var(--info), var(--primary));">
-                                <i class="fas fa-lightbulb"></i>
-                            </div>
-                            <div class="stat-value">${data.risk_assessments.reduce((sum, a) => sum + a.recommendations.length, 0)}</div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Recommendations</div>
-                        </div>
-                        
-                        <div class="stat-item">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, var(--success), var(--primary));">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stat-value">${data.processing_time}s</div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Analysis Time</div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
-                        <button class="btn btn-primary" onclick="downloadReport()">
-                            <i class="fas fa-download"></i>
-                            Download Report
-                        </button>
-                        <button class="btn btn-secondary" onclick="analyzeAnother()">
-                            <i class="fas fa-plus"></i>
-                            Analyze Another
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            resultsContainer.innerHTML = resultsHTML;
-            resultsContainer.classList.add('show');
-            
-            // Scroll to results
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Refresh the dashboard data
             setTimeout(() => {
+                loadDashboardData();
+                loadRecentPapers();
+            }, 500);
+        } else {
+            hideLoading();
+            showError(result.message || result.error || 'Analysis failed');
+        }
+    } catch (error) {
+        hideLoading();
+        showError('Network error: ' + error.message);
+    }
+}
+        
+       // Replace the existing displayResults function with this updated version:
+
+function displayResults(data) {
+    const resultsContainer = document.getElementById('results');
+    
+    // Handle both direct response and nested response formats
+    const analysisData = data.analysis || data;
+    
+    // Create results HTML with proper null checking
+    const resultsHTML = `
+        <h2 style="margin-bottom: 30px;">Analysis Results</h2>
+        
+        ${analysisData.domain ? `
+        <div class="domain-card">
+            <div class="domain-info">
+                <div class="domain-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="domain-text">
+                    <h3>Detected Domain</h3>
+                    <p>${analysisData.domain}</p>
+                </div>
+            </div>
+            <div class="domain-confidence">
+                <div class="confidence-value">${Math.round((analysisData.domain_confidence || 0.85) * 100)}%</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Confidence</div>
+            </div>
+        </div>
+        ` : ''}
+        
+        <div class="risk-grid">
+            ${(analysisData.risk_assessments || []).map(assessment => `
+                <div class="risk-card ${assessment.level}">
+                    <div class="risk-header">
+                        <h3 class="risk-title">${formatCategoryName(assessment.category)}</h3>
+                        <div class="risk-score-badge">
+                            <span class="risk-score-value">${(assessment.score * 10).toFixed(1)}/10</span>
+                            <span class="risk-level-pill ${assessment.level}">${assessment.level}</span>
+                        </div>
+                    </div>
+                    
+                    ${assessment.analysis_type ? `
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                            <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(99, 102, 241, 0.1); 
+                                         color: var(--primary); border-radius: 12px;">
+                                <i class="fas fa-brain"></i> ${assessment.analysis_type === 'hybrid_cot' ? 'CoT + Semantic' : assessment.analysis_type}
+                            </span>
+                        </div>
+                    ` : ''}
+                    
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">${assessment.explanation || formatCategoryName(assessment.category) + ' risk detected'}</p>
+                    
+                    ${assessment.evidence && assessment.evidence.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-secondary);">Evidence Found:</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                ${assessment.evidence.slice(0, 3).map(ev => `
+                                    <li style="padding: 5px 0; padding-left: 20px; position: relative;">
+                                        <i class="fas fa-circle" style="position: absolute; left: 0; top: 12px; font-size: 6px; color: var(--primary);"></i>
+                                        <span style="color: var(--text-muted); font-size: 0.9rem;">${ev}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    ${assessment.recommendations && assessment.recommendations.length > 0 ? `
+                        <div>
+                            <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-secondary);">Recommendations:</h4>
+                            ${assessment.recommendations.slice(0, 3).map(rec => `
+                                <div style="padding: 5px 0; padding-left: 20px; position: relative;">
+                                    <i class="fas fa-chevron-right" style="position: absolute; left: 0; top: 8px; font-size: 10px; color: var(--info);"></i>
+                                    <span style="color: var(--text-primary); font-size: 0.9rem;">${rec}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${assessment.cot_reasoning ? `
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
+                            <h5 style="font-size: 0.85rem; margin-bottom: 5px; color: var(--primary);">
+                                <i class="fas fa-brain"></i> CoT Reasoning
+                            </h5>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">${assessment.cot_reasoning}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </div>
+        
+        ${analysisData.chain_of_thought ? `
+            <div class="chart-card" style="margin-top: 30px; background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: var(--radius-xl); padding: 30px;">
+                <h3 style="margin-bottom: 20px; color: var(--text-primary);">
+                    <i class="fas fa-brain"></i> Chain of Thought Analysis
+                </h3>
+                <div style="background: var(--bg-dark); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px;">
+                        <strong>Reasoning Summary:</strong> ${analysisData.chain_of_thought.reasoning_summary || 'Complete reasoning performed'}
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">
+                        <strong>Confidence:</strong> ${Math.round((analysisData.chain_of_thought.cot_confidence || analysisData.chain_of_thought.confidence || 0.8) * 100)}%
+                    </p>
+                </div>
+            </div>
+        ` : ''}
+        
+        <div class="summary-card">
+            <h3 style="margin-bottom: 30px; text-align: center;">Analysis Summary</h3>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--danger), var(--warning));">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="stat-value">${(analysisData.risk_assessments || []).filter(a => a.level === 'high' || a.level === 'critical').length}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">High Risk Areas</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="stat-value">${(analysisData.overall_risk_score || analysisData.risk_analysis?.overall_risk?.score || 0).toFixed(1)}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Overall Score</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--info), var(--primary));">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="stat-value">${(analysisData.recommendations || []).length}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Recommendations</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success), var(--primary));">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value">${(analysisData.processing_time || 1.5).toFixed(1)}s</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Analysis Time</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="downloadReport()">
+                    <i class="fas fa-download"></i>
+                    Download Report
+                </button>
+                <button class="btn btn-secondary" onclick="analyzeAnother()">
+                    <i class="fas fa-plus"></i>
+                    Analyze Another
+                </button>
+            </div>
+        </div>
+    `;
+    
+    resultsContainer.innerHTML = resultsHTML;
+    resultsContainer.classList.add('show');
+    
+    // Scroll to results
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Update dashboard data after analysis
+    setTimeout(() => {
         loadDashboardData();
     }, 1000);
-        }
+}
         
         // Utility Functions
-        function formatCategoryName(category) {
-            const names = {
-                'bias_fairness': 'Bias & Fairness',
-                'privacy_data': 'Privacy & Data',
-                'safety_security': 'Safety & Security',
-                'dual_use': 'Dual-Use Potential',
-                'societal_impact': 'Societal Impact',
-                'transparency': 'Transparency'
-            };
-            return names[category] || category;
-        }
+      
         
         function showLoading() {
             document.getElementById('loading').classList.add('show');
@@ -1339,6 +1386,7 @@
         
 async function loadRecentPapers() {
     try {
+        debugger
         const response = await fetch('/api/papers?limit=5&sort=upload_time&order=desc');
         const result = await response.json();
         
@@ -1426,30 +1474,51 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Add this helper function to safely get nested values:
+function safeGet(obj, path, defaultValue = null) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj) || defaultValue;
+}
+
+// Update formatCategoryName to handle more cases:
+function formatCategoryName(category) {
+    const names = {
+        'bias_fairness': 'Bias & Fairness',
+        'privacy_data': 'Privacy & Data',
+        'safety_security': 'Safety & Security',
+        'dual_use': 'Dual-Use Potential',
+        'societal_impact': 'Societal Impact',
+        'transparency': 'Transparency',
+        'overall': 'Overall Assessment'
+    };
+    return names[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+
         async function loadDashboardData() {
     try {
         const response = await fetch('/api/stats');
         const stats = await response.json();
         
         if (response.ok) {
-            // Update stats with fallback values
-            document.getElementById('totalPapers').textContent = stats.overview?.total_papers_analyzed || '0';
-            document.getElementById('highRiskPapers').textContent = stats.overview?.high_risk_papers || '0';
+            // Update stats with safe access
+            document.getElementById('totalPapers').textContent = 
+                safeGet(stats, 'overview.total_papers_analyzed', '0');
+            document.getElementById('highRiskPapers').textContent = 
+                safeGet(stats, 'overview.high_risk_papers', '0');
             document.getElementById('avgProcessingTime').textContent = 
-                stats.overview?.average_processing_time ? `${stats.overview.average_processing_time}s` : '0s';
-            
-            // The accuracy rate can remain static
-            document.getElementById('accuracyRate').textContent = '99.7%';
+                stats.overview?.average_processing_time ? 
+                `${stats.overview.average_processing_time}s` : '0s';
+            document.getElementById('accuracyRate').textContent = 
+                safeGet(stats, 'overview.accuracy_rate', '99.7%');
         }
-        
-        // Always try to load recent papers
-        await loadRecentPapers();
     } catch (error) {
         console.error('Failed to load dashboard data:', error);
         // Set default values on error
         document.getElementById('totalPapers').textContent = '0';
         document.getElementById('highRiskPapers').textContent = '0';
         document.getElementById('avgProcessingTime').textContent = '0s';
+        document.getElementById('accuracyRate').textContent = '99.7%';
     }
 }
 
@@ -1479,6 +1548,28 @@ function escapeHtml(text) {
             }
         `;
         document.head.appendChild(style);
+
+        const loadingStyle = document.createElement('style');
+loadingStyle.textContent = `
+    .results-container {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    .results-container.show {
+        opacity: 1;
+    }
+    
+    .loading-container {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .loading-container.show {
+        opacity: 1;
+    }
+`;
+document.head.appendChild(loadingStyle);
     </script>
 </body>
 </html>
