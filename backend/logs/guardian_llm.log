@@ -6725,3 +6725,4 @@ Traceback (most recent call last):
     raise TemplateNotFound(template)
 jinja2.exceptions.TemplateNotFound: 404.html
 2025-06-12 13:53:51,571 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:68]
+2025-06-14 23:54:15,630 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]

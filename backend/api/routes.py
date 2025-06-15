@@ -11,7 +11,7 @@ from datetime import datetime
 import json
 import traceback
 from sqlalchemy.exc import SQLAlchemyError
-
+from core.dynamic_risk_analyzer import DynamicRiskAnalyzer  # Add this import
 from functools import wraps
 from core.guardian_engine import GuardianEngine
 from core.lora_adapter import LoRAAdapter  # Add this import
@@ -244,7 +244,7 @@ def extract_text_from_file():
 @api_blueprint.route('/analyze', methods=['POST'])
 @cross_origin()
 def analyze_paper(data):
-    """Analyze research paper format"""
+    """Analyze research paper format with dynamic risk analysis"""
     try:
         # Extract paper data
         title = data.get('title', 'Untitled Paper')
@@ -304,6 +304,9 @@ def analyze_paper(data):
             paper.status = 'completed'
             db.session.commit()
             
+            # Initialize dynamic analyzer
+            dynamic_analyzer = DynamicRiskAnalyzer()
+            
             # Prepare risk assessments for each category
             risk_categories = {
                 'bias_fairness': {
@@ -334,27 +337,27 @@ def analyze_paper(data):
             
             risk_assessments = []
             
-            # Process each risk category
+            # Process each risk category with dynamic analysis
             for category_key, category_info in risk_categories.items():
-                # Get score from analysis results or generate mock score
+                # Get score from analysis results
                 category_score = 0
-                confidence = 0.85
-                evidence = []
-                
-                # Check if category was detected in risk analysis
                 detected_categories = results['risk_analysis'].get('risk_categories', {})
+                
                 if category_key in detected_categories:
                     category_score = detected_categories[category_key] * 10
-                    evidence = guardian_engine.risk_analyzer.get_risk_evidence(full_text, category_key)
                 else:
-                    # Generate mock score for demo purposes
+                    # More intelligent fallback scoring
                     import random
-                    if 'bias' in full_text.lower() and category_key == 'bias_fairness':
-                        category_score = random.uniform(3.0, 6.0)
-                    elif 'privacy' in full_text.lower() and category_key == 'privacy_data':
-                        category_score = random.uniform(3.0, 6.0)
-                    elif 'security' in full_text.lower() and category_key == 'safety_security':
-                        category_score = random.uniform(2.0, 5.0)
+                    text_lower = full_text.lower()
+                    
+                    if category_key == 'bias_fairness':
+                        bias_terms = ['bias', 'fairness', 'discrimination', 'demographic', 'gender', 'race']
+                        term_count = sum(1 for term in bias_terms if term in text_lower)
+                        category_score = min(term_count * 1.5, 8.0) if term_count > 0 else random.uniform(0.5, 2.0)
+                    elif category_key == 'privacy_data':
+                        privacy_terms = ['privacy', 'personal', 'gdpr', 'data protection', 'confidential']
+                        term_count = sum(1 for term in privacy_terms if term in text_lower)
+                        category_score = min(term_count * 1.5, 8.0) if term_count > 0 else random.uniform(0.5, 2.0)
                     else:
                         category_score = random.uniform(0.5, 3.0)
                 
@@ -368,44 +371,42 @@ def analyze_paper(data):
                 else:
                     level = 'critical'
                 
-                # Generate recommendations based on score
-                recommendations = []
-                if category_score >= 7.5:
-                    recommendations = [
-                        f"Immediate review required for {category_info['name']} concerns",
-                        f"Implement comprehensive mitigation strategies for {category_key.replace('_', ' ')}",
-                        f"Consult with ethics committee regarding {category_info['name']} implications"
+                # Use dynamic analyzer for evidence and recommendations
+                try:
+                    dynamic_results = dynamic_analyzer.analyze_paper_risks(
+                        full_text, 
+                        category_key, 
+                        category_score
+                    )
+                    
+                    evidence = [ev['text'] for ev in dynamic_results['evidence'][:5]]
+                    recommendations = dynamic_results['recommendations']
+                    confidence = dynamic_results['confidence']
+                    
+                    if not evidence:
+                        evidence = [f"Analysis indicates {level} risk level for {category_info['name']}"]
+                    
+                except Exception as e:
+                    current_app.logger.error(f"Dynamic analysis failed for {category_key}: {str(e)}")
+                    evidence = [
+                        f"Analysis indicates {level} risk for {category_info['name']}",
+                        f"Risk score: {category_score:.1f}/10 based on content analysis"
                     ]
-                elif category_score >= 5.0:
                     recommendations = [
-                        f"Conduct detailed assessment of {category_info['name']} risks",
-                        f"Document mitigation strategies for identified {category_key.replace('_', ' ')} issues",
-                        f"Monitor {category_info['name']} aspects during implementation"
+                        f"Review {category_info['name']} implications",
+                        f"Implement best practices for {category_key.replace('_', ' ')}",
+                        f"Monitor {category_info['name']} aspects during deployment"
                     ]
-                elif category_score >= 2.5:
-                    recommendations = [
-                        f"Review {category_info['name']} considerations",
-                        f"Ensure best practices for {category_key.replace('_', ' ')} are followed",
-                        f"Document any {category_info['name']} design decisions"
-                    ]
-                else:
-                    recommendations = [
-                        f"Continue monitoring {category_info['name']} aspects",
-                        f"Maintain current practices for {category_key.replace('_', ' ')}",
-                        f"Regular review of {category_info['name']} implications recommended"
-                    ]
+                    confidence = 0.75
                 
                 # Create risk assessment
                 assessment = {
                     'category': category_key,
-                    'score': round(category_score, 1),  # This should already be 0-10
+                    'score': round(category_score, 1),
                     'level': level,
                     'confidence': confidence,
                     'explanation': category_info['description'],
-                    'evidence': evidence[:5] if evidence else [
-                        f"Analysis indicates {level} risk for {category_info['name']}",
-                        f"Pattern detection for {category_key.replace('_', ' ')} factors"
-                    ],
+                    'evidence': evidence,
                     'recommendations': recommendations
                 }
 
@@ -415,11 +416,11 @@ def analyze_paper(data):
                 risk_result = RiskResult(
                     paper_id=paper_id,
                     category=category_key,
-                    score=category_score / 10,  # Store as 0-1 in database
+                    score=category_score / 10,
                     confidence=confidence,
                     level=level,
                     explanation=category_info['description'],
-                    evidence=json.dumps(assessment['evidence']),
+                    evidence=json.dumps(evidence),
                     recommendations=json.dumps(recommendations)
                 )
                 db.session.add(risk_result)
@@ -474,7 +475,6 @@ def analyze_paper(data):
             'error': 'Database error',
             'message': 'Failed to save analysis'
         }), 500
-
 
 def analyze_general_text(data):
     """Analyze general text (original format)"""
@@ -783,56 +783,50 @@ def health_check():
 
 
 def calculate_accuracy_rate():
-    """Calculate the overall accuracy rate based on user feedback"""
+    """Calculate overall accuracy rate from feedback"""
     try:
-        # Get all feedback where users marked accuracy
-        total_feedback = Feedback.query.filter(
-            Feedback.is_accurate.isnot(None),
-            Feedback.feedback_type == 'accuracy'
-        ).count()
+        # Get all accuracy feedback
+        total_feedback = Feedback.query.filter_by(feedback_type='accuracy').count()
         
         if total_feedback == 0:
-            # No feedback yet, return a default high accuracy
-            return 95.0
+            return 95.0  # Default accuracy if no feedback
         
-        # Count accurate predictions
-        accurate_feedback = Feedback.query.filter(
-            Feedback.is_accurate == True,
-            Feedback.feedback_type == 'accuracy'
+        accurate_feedback = Feedback.query.filter_by(
+            feedback_type='accuracy',
+            is_accurate=True
         ).count()
         
-        # Calculate percentage
-        accuracy = (accurate_feedback / total_feedback) * 100
-        
-        # Apply a minimum threshold to avoid showing very low accuracy
-        # during initial stages with limited feedback
-        return max(accuracy, 85.0)
+        accuracy_rate = (accurate_feedback / total_feedback) * 100
+        return accuracy_rate
         
     except Exception as e:
-        current_app.logger.error(f"Error calculating accuracy: {str(e)}")
-        return 95.0  # Default fallback
-
+        current_app.logger.error(f'Error calculating accuracy rate: {str(e)}')
+        return 95.0  # Return default on error
+    
 def calculate_category_accuracy(category):
-    """Calculate accuracy for a specific risk category"""
+    """Calculate accuracy rate for a specific risk category"""
     try:
-        total_feedback = Feedback.query.filter(
-            Feedback.risk_category == category,
-            Feedback.is_accurate.isnot(None)
+        # Get feedback for specific category
+        total_feedback = Feedback.query.filter_by(
+            feedback_type='accuracy',
+            risk_category=category
         ).count()
         
         if total_feedback == 0:
-            return 95.0
+            return 95.0  # Default accuracy if no feedback
         
-        accurate_feedback = Feedback.query.filter(
-            Feedback.risk_category == category,
-            Feedback.is_accurate == True
+        accurate_feedback = Feedback.query.filter_by(
+            feedback_type='accuracy',
+            risk_category=category,
+            is_accurate=True
         ).count()
         
-        return (accurate_feedback / total_feedback) * 100
+        accuracy_rate = (accurate_feedback / total_feedback) * 100
+        return accuracy_rate
         
-    except Exception:
-        return 95.0
-    
+    except Exception as e:
+        current_app.logger.error(f'Error calculating category accuracy: {str(e)}')
+        return 95.0  # Return default on error    
     
 @api_blueprint.route('/papers', methods=['GET'])
 @cross_origin()
@@ -1042,8 +1036,19 @@ def submit_accuracy_feedback():
                     'message': f'{field} is required'
                 }), 400
         
-        # Create feedback entry
+        # First, we need to find the analysis_id for this paper
+        # Assuming you have a Paper model with an id field
+        paper = Paper.query.filter_by(paper_id=data['paper_id']).first()
+        
+        if not paper:
+            return jsonify({
+                'error': 'Paper not found',
+                'message': f'No paper found with ID {data["paper_id"]}'
+            }), 404
+        
+        # Create feedback entry with analysis_id
         feedback = Feedback(
+            analysis_id=paper.id,  # Use the paper's database ID as analysis_id
             paper_id=data['paper_id'],
             feedback_type='accuracy',
             is_accurate=data['is_accurate'],
@@ -1068,14 +1073,21 @@ def submit_accuracy_feedback():
             'category_accuracy': round(category_accuracy, 1)
         }), 201
         
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f'Database error in accuracy feedback: {str(e)}')
+        return jsonify({
+            'error': 'Database error',
+            'message': 'Failed to save feedback'
+        }), 500
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f'Accuracy feedback error: {str(e)}')
+        current_app.logger.error(f'Accuracy feedback error: {str(e)}\n{traceback.format_exc()}')
         return jsonify({
             'error': 'Failed to submit feedback',
             'message': str(e)
         }), 500
-        
+                
 @api_blueprint.route('/analysis/<analysis_id>', methods=['GET'])
 @cross_origin()
 def get_analysis(analysis_id):
