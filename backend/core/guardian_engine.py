@@ -11,10 +11,17 @@ import nltk
 from textblob import TextBlob
 import numpy as np
 from core.lora_adapter import LoRAAdapter, DomainSpecificAnalyzer
-from core.semantic_analyzer import SemanticRiskAnalyzer, SemanticRiskIntegrator
 from core.cot_analyzer import ChainOfThoughtAnalyzer, CoTIntegrator  # New import
 import time  
 import logging
+
+from core.semantic_analyzer import (
+    SemanticRiskAnalyzer, 
+    SemanticRiskIntegrator
+    
+)
+from core.vector_db_postgres import PgVectorDatabase, create_pgvector_analyzer  # Add this
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -69,7 +76,11 @@ class GuardianEngine:
 
         
     def get_status(self) -> Dict[str, Any]:
-        """Get engine status including CoT analyzer"""
+        """Get engine status including semantic analyzer type"""
+        analyzer_info = 'inactive'
+        if hasattr(self, 'analyzer_type'):
+            analyzer_info = f'active_{self.analyzer_type}'
+        
         return {
             'initialized': self.is_initialized,
             'version': '1.0.0',
@@ -77,53 +88,126 @@ class GuardianEngine:
                 'text_processor': 'active',
                 'risk_analyzer': 'active',
                 'sentiment_analyzer': 'active',
-                'semantic_analyzer': 'active',
+                'semantic_analyzer': analyzer_info,
                 'lora_adapter': 'active' if self.lora_adapter else 'inactive',
-                'cot_analyzer': 'active'  # New component
+                'cot_analyzer': 'active'
+            },
+            'semantic_details': {
+                'type': getattr(self, 'analyzer_type', 'unknown'),
+                'enhanced': getattr(self, 'analyzer_type', 'svd') in ['pgvector', 'faiss'],
+                'vector_db': getattr(self, 'analyzer_type', 'none') if hasattr(self, 'analyzer_type') else 'none'
             }
         }
         
     def _initialize_semantic_analyzer(self):
-        """Initialize the semantic analyzer with training data or patterns"""
+        """Initialize the semantic analyzer with enhanced vector database support"""
         try:
-            import os
-            model_path = os.path.join(self.config.MODEL_CACHE_DIR, 'semantic_model.pkl')
+            # Check if we should use enhanced analyzer
+            use_enhanced = os.getenv('USE_ENHANCED_SEMANTIC', 'true').lower() == 'true'
+            use_postgres = bool(os.getenv('DATABASE_URL')) or bool(os.getenv('PGVECTOR_URL'))
             
-            # Create models directory if it doesn't exist
-            os.makedirs(self.config.MODEL_CACHE_DIR, exist_ok=True)
-            
-            if os.path.exists(model_path):
-                # Load pre-trained model
-                import pickle
-                with open(model_path, 'rb') as f:
-                    saved_data = pickle.load(f)
-                    self.semantic_analyzer.vectorizer = saved_data.get('vectorizer')
-                    self.semantic_analyzer.svd = saved_data.get('svd')
-                    self.semantic_analyzer.risk_concepts = saved_data.get('risk_concepts', {})
-                    self.semantic_analyzer.is_fitted = saved_data.get('is_fitted', False)
-                logger.info("Loaded pre-trained semantic model")
-            else:
-                # Initialize with patterns if no saved model
-                logger.info("No saved semantic model found, initializing with patterns")
-                self.semantic_analyzer._initialize_with_patterns()
+            if use_enhanced:
+                if use_postgres:
+                    # Use PostgreSQL with pgvector
+                    connection_string = os.getenv('PGVECTOR_URL') or os.getenv('DATABASE_URL')
+                    self.semantic_analyzer = create_pgvector_analyzer(connection_string)
+                    self.analyzer_type = 'pgvector'
+                    logger.info("Using PostgreSQL pgvector for semantic analysis")
+                else:
+                    # Use FAISS-based enhanced analyzer
+                    db_path = os.path.join(self.config.MODEL_CACHE_DIR, 'vector_db')
+                    self.semantic_analyzer = create_enhanced_semantic_analyzer(db_path=db_path)
+                    self.analyzer_type = 'faiss'
+                    logger.info("Using FAISS for enhanced semantic analysis")
+                
+                # Create integrator for enhanced analyzer
+                self.semantic_integrator = SemanticRiskIntegrator(self.semantic_analyzer)
                 self.semantic_analyzer.is_fitted = True
+                
+            else:
+                # Use original SVD-based analyzer
+                model_path = os.path.join(self.config.MODEL_CACHE_DIR, 'semantic_model.pkl')
+                os.makedirs(self.config.MODEL_CACHE_DIR, exist_ok=True)
+                
+                self.semantic_analyzer = SemanticRiskAnalyzer(n_components=100)
+                
+                if os.path.exists(model_path):
+                    # Load pre-trained model
+                    import pickle
+                    with open(model_path, 'rb') as f:
+                        saved_data = pickle.load(f)
+                        self.semantic_analyzer.vectorizer = saved_data.get('vectorizer')
+                        self.semantic_analyzer.svd = saved_data.get('svd')
+                        self.semantic_analyzer.risk_concepts = saved_data.get('risk_concepts', {})
+                        self.semantic_analyzer.is_fitted = saved_data.get('is_fitted', False)
+                    logger.info("Loaded pre-trained SVD semantic model")
+                else:
+                    # Initialize with patterns if no saved model
+                    logger.info("No saved semantic model found, initializing with patterns")
+                    self.semantic_analyzer._initialize_with_patterns()
+                    self.semantic_analyzer.is_fitted = True
+                
+                self.semantic_integrator = SemanticRiskIntegrator(self.semantic_analyzer)
+                self.analyzer_type = 'svd'
                 
         except Exception as e:
             logger.error(f"Failed to initialize semantic analyzer: {e}")
-            # Fallback to pattern-based initialization
+            # Fallback to pattern-based SVD analyzer
+            self.semantic_analyzer = SemanticRiskAnalyzer(n_components=100)
             self.semantic_analyzer._initialize_with_patterns()
             self.semantic_analyzer.is_fitted = True
-                    
+            self.semantic_integrator = SemanticRiskIntegrator(self.semantic_analyzer)
+            self.analyzer_type = 'svd'
+            
+            
+    def add_custom_risk_pattern(self, category: str, pattern_text: str, severity: float = 0.8):
+        """Add custom risk pattern to the semantic analyzer"""
+        if hasattr(self, 'analyzer_type'):
+            if self.analyzer_type == 'pgvector':
+                self.semantic_analyzer.add_custom_patterns_from_feedback(category, pattern_text, severity)
+            elif self.analyzer_type == 'faiss':
+                # Enhanced analyzer method
+                self.semantic_analyzer.add_custom_patterns(category, [pattern_text], [severity])
+            else:
+                # SVD analyzer doesn't support dynamic patterns
+                logger.warning("SVD analyzer doesn't support adding custom patterns")
+        
+        logger.info(f"Added custom pattern for {category}")    
+        
+    def find_similar_analyses(self, text: str, top_k: int = 5) -> List[Dict]:
+        """Find similar previously analyzed texts"""
+        if hasattr(self, 'analyzer_type'):
+            if self.analyzer_type == 'pgvector':
+                return self.semantic_analyzer.find_similar_analyzed_texts(text, top_k)
+            elif self.analyzer_type == 'faiss':
+                return self.semantic_analyzer.get_similar_texts(text, top_k=top_k)
+            else:
+                # SVD analyzer doesn't have similarity search
+                logger.warning("SVD analyzer doesn't support similarity search")
+                return []
+        return []
+
+    def update_pattern_severity_from_feedback(self, pattern_id: str, category: str, new_severity: float):
+        """Update pattern severity based on user feedback"""
+        if hasattr(self, 'analyzer_type'):
+            if self.analyzer_type == 'pgvector':
+                self.semantic_analyzer.update_pattern_severity(pattern_id, new_severity)
+            elif self.analyzer_type == 'faiss':
+                self.semantic_analyzer.update_pattern_severity(category, pattern_id, new_severity)
+            else:
+                logger.warning("SVD analyzer doesn't support updating pattern severity")
+                
+                
     def analyze_text(self, text: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Perform complete text analysis with LoRA, SVD, and Chain of Thought enhancement
+        Perform complete text analysis with enhanced semantic analysis support
         """
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
         
         # Check if CoT analysis is enabled in options
         enable_cot = options.get('enable_cot', True) if options else True
-        cot_mode = options.get('cot_mode', 'enhanced') if options else 'enhanced'  # 'enhanced', 'standalone', 'disabled'
+        cot_mode = options.get('cot_mode', 'enhanced') if options else 'enhanced'
         
         # Process text
         processed_text = self.text_processor.process(text)
@@ -134,17 +218,39 @@ class GuardianEngine:
         # Perform traditional risk analysis
         risk_analysis = self._analyze_risks(processed_text)
         
-        # Enhance with semantic analysis (SVD)
-        if hasattr(self, 'semantic_integrator'):
-            traditional_scores = {
-                cat: score for cat, score in risk_analysis['risk_categories'].items()
-            }
-            enhanced_scores = self.semantic_integrator.enhance_risk_analysis(
-                text, traditional_scores
-            )
+        # Enhanced semantic analysis based on analyzer type
+        if hasattr(self, 'analyzer_type') and self.analyzer_type in ['pgvector', 'faiss']:
+            # Use enhanced semantic analysis
+            if self.analyzer_type == 'pgvector':
+                semantic_scores = self.semantic_analyzer.analyze_text_semantic_risk(text, store_results=True)
+            else:  # faiss
+                semantic_scores = self.semantic_analyzer.analyze_semantic_risk(text)
+            
+            # Get semantic evidence for each category
+            for category in risk_analysis['risk_categories']:
+                if self.analyzer_type == 'pgvector':
+                    semantic_evidence = self.semantic_analyzer.find_evidence_sentences(text, category, num_sentences=3)
+                else:  # faiss
+                    semantic_evidence = self.semantic_analyzer.find_evidence_with_embeddings(text, category, num_sentences=3)
+                
+                # Store semantic evidence for later use
+                risk_analysis[f'{category}_semantic_evidence'] = semantic_evidence
+            
+            # Merge scores
+            for category, sem_score in semantic_scores.items():
+                if category in risk_analysis['risk_categories']:
+                    trad_score = risk_analysis['risk_categories'][category]
+                    risk_analysis['risk_categories'][category] = 0.6 * trad_score + 0.4 * sem_score
+            
+            risk_analysis['analysis_methods'] = ['keyword', f'semantic_{self.analyzer_type}']
+            
+        else:
+            # Use original SVD-based semantic analysis
+            traditional_scores = {cat: score for cat, score in risk_analysis['risk_categories'].items()}
+            enhanced_scores = self.semantic_integrator.enhance_risk_analysis(text, traditional_scores)
             risk_analysis['risk_categories'] = enhanced_scores
             risk_analysis['analysis_methods'] = ['keyword', 'semantic_svd']
-        
+            
         # Enhance with LoRA if available
         if self.lora_adapter and domain:
             lora_risks = self.domain_analyzer.analyze_with_domain_adaptation(text, domain)
@@ -256,7 +362,6 @@ class GuardianEngine:
         """Generate detailed risk assessments with semantic evidence"""
         assessments = []
         
-        # Add assessments for detected risk categories
         for category, score in risk_analysis['risk_categories'].items():
             level = risk_level_from_score(score)
             
@@ -265,13 +370,32 @@ class GuardianEngine:
             
             # Get semantic evidence
             semantic_evidence = []
-            if hasattr(self, 'semantic_integrator'):
-                semantic_evidence = self.semantic_integrator.generate_semantic_evidence(
-                    text, category
-                )
+            
+            # Check if we have cached semantic evidence from enhanced analyzer
+            cached_evidence_key = f'{category}_semantic_evidence'
+            if cached_evidence_key in risk_analysis:
+                cached_evidence = risk_analysis[cached_evidence_key]
+                for ev in cached_evidence[:3]:
+                    if isinstance(ev, dict):
+                        text_snippet = ev.get('text', '')
+                        relevance = ev.get('relevance', 0)
+                        semantic_evidence.append(f"[Semantic {relevance:.2f}] {text_snippet}")
+                    else:
+                        semantic_evidence.append(str(ev))
+            else:
+                # Use semantic integrator for SVD-based evidence
+                if hasattr(self, 'semantic_integrator'):
+                    semantic_evidence = self.semantic_integrator.generate_semantic_evidence(text, category)
             
             # Combine evidence
             all_evidence = traditional_evidence[:3] + semantic_evidence[:2]
+            
+            # Ensure we have evidence
+            if not all_evidence:
+                all_evidence = [
+                    f"Analysis indicates {level.value} risk for {category.replace('_', ' ')}",
+                    f"Risk score: {score:.2f}/10 based on content analysis"
+                ]
             
             assessment = {
                 'category': category,
@@ -279,27 +403,14 @@ class GuardianEngine:
                 'score': score,
                 'confidence': min(0.9, score + 0.3),
                 'keywords': self._extract_category_keywords(text, category),
-                'evidence': all_evidence,
+                'evidence': all_evidence[:5],
                 'context': self._get_risk_context(text, category),
-                'analysis_type': 'hybrid'  # keyword + semantic
+                'analysis_type': f'hybrid_{self.analyzer_type}' if hasattr(self, 'analyzer_type') else 'hybrid'
             }
             assessments.append(assessment)
         
-        # Add overall risk assessment if significant
-        if risk_analysis['critical_risk']['score'] > 0.3:
-            assessments.append({
-                'category': 'overall',
-                'level': risk_analysis['critical_risk']['level'],
-                'score': risk_analysis['critical_risk']['score'],
-                'confidence': 0.85,
-                'keywords': [],
-                'evidence': ['Multiple risk factors detected through semantic and keyword analysis'],
-                'context': 'Comprehensive analysis indicates elevated risk levels',
-                'analysis_type': 'combined'
-            })
-        
         return assessments
-    
+
     def _get_recommendations(self, category: str, score: float) -> List[str]:
         """
         Generate basic recommendations for a risk category
@@ -1516,22 +1627,27 @@ class GuardianEngine:
 
     # Add method to save semantic model:
     def save_semantic_model(self, save_path: str):
-        """Save the trained semantic model"""
-        import pickle
-        import os
+        """Save the semantic model (only works for SVD analyzer)"""
+        if hasattr(self, 'analyzer_type') and self.analyzer_type == 'svd':
+            import pickle
+            import os
+            
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            
+            save_data = {
+                'vectorizer': self.semantic_analyzer.vectorizer,
+                'svd': self.semantic_analyzer.svd,
+                'risk_concepts': self.semantic_analyzer.risk_concepts,
+                'is_fitted': self.semantic_analyzer.is_fitted
+            }
+            
+            with open(save_path, 'wb') as f:
+                pickle.dump(save_data, f)
+            
+            logger.info(f"Saved SVD semantic model to {save_path}")
+        else:
+            logger.warning(f"Cannot save {getattr(self, 'analyzer_type', 'unknown')} analyzer model using this method")
         
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        
-        save_data = {
-            'vectorizer': self.semantic_analyzer.vectorizer,
-            'svd': self.semantic_analyzer.svd,
-            'risk_concepts': self.semantic_analyzer.risk_concepts
-        }
-        
-        with open(save_path, 'wb') as f:
-            pickle.dump(save_data, f)
-        
-        logger.info(f"Saved semantic model to {save_path}")
     def _analyze_risks(self, processed_text: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze text for various risk factors"""
         
