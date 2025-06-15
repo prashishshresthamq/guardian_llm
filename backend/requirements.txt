@@ -18,3 +18,19 @@ werkzeug==2.3.6
 gunicorn==20.1.0
 psutil==5.9.5
 python-dateutil==2.8.2
+
+# Add these to your existing requirements.txt
+
+# Sentence Transformers for embeddings
+sentence-transformers>=2.2.2
+
+# FAISS for local vector search
+faiss-cpu>=1.7.4  # Use faiss-gpu if you have CUDA
+
+# PostgreSQL with pgvector support
+pgvector>=0.2.3
+psycopg2-binary>=2.9.7  # or psycopg2 for production
+
+# Optional: For better performance
+numpy>=1.24.0
+torch>=2.0.0  # Required by sentence-transformers

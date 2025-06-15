@@ -158,7 +158,7 @@ def analyze_with_cot():
         options['cot_mode'] = options.get('cot_mode', 'enhanced')
         
         # Get guardian engine
-        guardian_engine = current_app.config.get('guardian_engine')
+        
         if not guardian_engine:
             return jsonify({'error': 'Analysis engine not available'}), 503
         
@@ -828,6 +828,104 @@ def calculate_category_accuracy(category):
         current_app.logger.error(f'Error calculating category accuracy: {str(e)}')
         return 95.0  # Return default on error    
     
+@api_blueprint.route('/api/patterns/add', methods=['POST'])
+@cross_origin()
+def add_custom_pattern():
+    """Add custom risk pattern based on user feedback"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['category', 'pattern_text', 'severity']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Get guardian engine
+        guardian_engine = current_app.config.get('guardian_engine')
+        if not guardian_engine:
+            return jsonify({'error': 'Analysis engine not available'}), 503
+        
+        # Add custom pattern
+        guardian_engine.add_custom_risk_pattern(
+            category=data['category'],
+            pattern_text=data['pattern_text'],
+            severity=float(data['severity'])
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Custom pattern added successfully',
+            'category': data['category']
+        }), 201
+        
+    except Exception as e:
+        logger.error(f"Error adding custom pattern: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@api_blueprint.route('/api/similar-papers', methods=['POST'])
+@cross_origin()
+def find_similar_papers():
+    """Find papers similar to the provided text"""
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        top_k = data.get('top_k', 5)
+        
+        if not text:
+            return jsonify({'error': 'Text is required'}), 400
+        
+        # Get guardian engine
+        guardian_engine = current_app.config.get('guardian_engine')
+        if not guardian_engine:
+            return jsonify({'error': 'Analysis engine not available'}), 503
+        
+        # Find similar analyses
+        similar_papers = guardian_engine.find_similar_analyses(text, top_k)
+        
+        return jsonify({
+            'status': 'success',
+            'similar_papers': similar_papers,
+            'count': len(similar_papers)
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error finding similar papers: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@api_blueprint.route('/api/patterns/update-severity', methods=['POST'])
+@cross_origin()
+def update_pattern_severity():
+    """Update pattern severity based on feedback"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['pattern_id', 'category', 'new_severity']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Get guardian engine
+        guardian_engine = current_app.config.get('guardian_engine')
+        if not guardian_engine:
+            return jsonify({'error': 'Analysis engine not available'}), 503
+        
+        # Update pattern severity
+        guardian_engine.update_pattern_severity_from_feedback(
+            pattern_id=data['pattern_id'],
+            category=data['category'],
+            new_severity=float(data['new_severity'])
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Pattern severity updated successfully'
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error updating pattern severity: {e}")
+        return jsonify({'error': str(e)}), 500
 @api_blueprint.route('/papers', methods=['GET'])
 @cross_origin()
 def get_papers():
