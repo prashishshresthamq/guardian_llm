@@ -251,6 +251,7 @@ class Feedback(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     analysis_id = db.Column(db.Integer, db.ForeignKey('analyses.id'), nullable=True)  # Made nullable
+    
     paper_id = db.Column(db.String(100), db.ForeignKey('papers.paper_id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     feedback_type = db.Column(db.String(50), default='accuracy')
