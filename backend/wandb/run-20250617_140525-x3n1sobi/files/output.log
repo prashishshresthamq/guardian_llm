@@ -1,0 +1,15 @@
+Epoch 1/20 [Train]:   0%|                                                                                                  | 0/8 [00:33<?, ?it/s]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 170, in <module>
+    main()
+    ~~~~^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 131, in main
+    trained_model = trainer.train(train_dataset, val_dataset, epochs=config['max_epochs'])
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/train_models.py", line 141, in train
+    outputs = self.model(batch_dict)  # Pass batch as a single argument
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+TypeError: HierarchicalRiskPropagationNetwork.forward() missing 2 required positional arguments: 'edge_index' and 'batch'

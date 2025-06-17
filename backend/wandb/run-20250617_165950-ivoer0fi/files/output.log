@@ -1,0 +1,12 @@
+Epoch 1/20 [Train]:   0%|                                                                                                  | 0/8 [00:02<?, ?it/s]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 314, in <module>
+    main()
+    ~~~~^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 275, in main
+    trained_model = trainer.train(train_dataset, val_dataset, epochs=config['max_epochs'])
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/train_models.py", line 173, in train
+    outputs = self._extract_output_tensor(outputs)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/train_models.py", line 300, in _extract_output_tensor
+    raise ValueError(f"Model returned dict but no valid output tensor found. Keys: {list(outputs.keys())}")
+ValueError: Model returned dict but no valid output tensor found. Keys: ['risk_0', 'risk_1', 'risk_2', 'risk_3', 'risk_4', 'risk_5']

@@ -1,0 +1,28 @@
+Epoch 1/20 [Train]:   0%|                                                                                                  | 0/8 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 170, in <module>
+    main()
+    ~~~~^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/scripts/train_all_models.py", line 131, in main
+    trained_model = trainer.train(train_dataset, val_dataset, epochs=config['max_epochs'])
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/train_models.py", line 171, in train
+    loss = criterion(outputs, labels)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/modules/loss.py", line 821, in forward
+    return F.binary_cross_entropy_with_logits(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        input,
+        ^^^^^^
+    ...<3 lines>...
+        reduction=self.reduction,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/.venv/lib/python3.13/site-packages/torch/nn/functional.py", line 3638, in binary_cross_entropy_with_logits
+    if not (target.size() == input.size()):
+                             ^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'size'

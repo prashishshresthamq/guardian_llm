@@ -14,7 +14,8 @@ from core.lora_adapter import LoRAAdapter, DomainSpecificAnalyzer
 from core.cot_analyzer import ChainOfThoughtAnalyzer, CoTIntegrator  # New import
 import time  
 import logging
-
+import torch
+from core.hrpn_model import HierarchicalRiskPropagationNetwork
 from core.semantic_analyzer import (
     SemanticRiskAnalyzer, 
     SemanticRiskIntegrator
@@ -58,10 +59,14 @@ class GuardianEngine:
         self.risk_analyzer = RiskAnalyzer()
         self.is_initialized = True
         
-        # Initialize LoRA adapter
-        self.lora_adapter = None
-        self.domain_analyzer = DomainSpecificAnalyzer()
-        self._initialize_lora()
+        # Load the trained HRPN model
+        self.hrpn_model = self._load_hrpn_model()
+    
+    # Load real LoRA adapters
+        self.lora_adapters = self._load_trained_lora_adapters()
+    
+        # Initialize with actual trained models
+        self.is_initialized = True
         
          # Initialize SVD-based semantic analyzer
         self.semantic_analyzer = SemanticRiskAnalyzer(n_components=100)
@@ -159,7 +164,25 @@ class GuardianEngine:
             self.semantic_integrator = SemanticRiskIntegrator(self.semantic_analyzer)
             self.analyzer_type = 'svd'
             
-            
+    def _load_hrpn_model(self):
+        """Load the trained HRPN model"""
+        model = HierarchicalRiskPropagationNetwork()
+        # Fixed the filename - using underscore instead of dot
+        checkpoint = torch.load('../checkpoints/final_guardian_llm_model.pt', map_location='cpu', weights_only=False)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        model.eval()
+        return model
+
+    def _load_trained_lora_adapters(self):
+        """Load actually trained LoRA adapters"""
+        adapters = {}
+        for domain in ['biomedical', 'legal', 'technical']:
+            adapter_path = f'models/lora_adapters/{domain}_trained.pt'
+            if os.path.exists(adapter_path):
+                adapter = LoRAAdapter()
+                adapter.load_adapter(adapter_path)
+                adapters[domain] = adapter
+        return adapters       
     def add_custom_risk_pattern(self, category: str, pattern_text: str, severity: float = 0.8):
         """Add custom risk pattern to the semantic analyzer"""
         if hasattr(self, 'analyzer_type'):
@@ -172,8 +195,139 @@ class GuardianEngine:
                 # SVD analyzer doesn't support dynamic patterns
                 logger.warning("SVD analyzer doesn't support adding custom patterns")
         
-        logger.info(f"Added custom pattern for {category}")    
+        logger.info(f"Added custom pattern for {category}") 
+    def create_enhanced_semantic_analyzer(db_path=None):
+        """Placeholder for enhanced semantic analyzer"""
+        # Return the basic semantic analyzer for now
+        analyzer = SemanticRiskAnalyzer(n_components=100)
+        analyzer._initialize_with_patterns()
+        analyzer.is_fitted = True
+        return analyzer   
+    def _create_paper_graph(self, text: str):
+        """Create a graph representation of the paper for HRPN model"""
+        import torch
+        from torch_geometric.data import Data
         
+        # Initialize embedding dimension to match HRPN input_dim
+        embedding_dim = 768  # This should match your HRPN's input_dim
+        
+        # Split text into sentences
+        sentences = text.split('. ')
+        num_sentences = min(len(sentences), 50)  # Limit for performance
+        
+        # Create sentence embeddings
+        if hasattr(self, 'semantic_analyzer') and hasattr(self.semantic_analyzer, 'vectorizer'):
+            # Use semantic analyzer's vectorizer if available
+            try:
+                # Get TF-IDF representations
+                sentence_vectors = []
+                for i in range(num_sentences):
+                    if i < len(sentences):
+                        vec = self.semantic_analyzer.vectorizer.transform([sentences[i]]).toarray()[0]
+                        # Pad or truncate to embedding_dim
+                        if len(vec) < embedding_dim:
+                            vec = np.pad(vec, (0, embedding_dim - len(vec)), 'constant')
+                        else:
+                            vec = vec[:embedding_dim]
+                        sentence_vectors.append(vec)
+                    else:
+                        sentence_vectors.append(np.zeros(embedding_dim))
+                
+                x = torch.tensor(np.array(sentence_vectors), dtype=torch.float)
+            except:
+                # Fallback to random embeddings
+                x = self._create_fallback_embeddings(sentences[:num_sentences], embedding_dim)
+        else:
+            # Create simple embeddings based on sentence features
+            x = self._create_fallback_embeddings(sentences[:num_sentences], embedding_dim)
+        
+        # Create edge index - hierarchical structure
+        edge_list = []
+        
+        # Connect consecutive sentences
+        for i in range(num_sentences - 1):
+            edge_list.append([i, i + 1])
+            edge_list.append([i + 1, i])
+        
+        # Add hierarchical connections (every 5th sentence connects to earlier ones)
+        for i in range(5, num_sentences, 5):
+            for j in range(max(0, i-5), i):
+                edge_list.append([i, j])
+                edge_list.append([j, i])
+        
+        # Add some skip connections for long-range dependencies
+        for i in range(0, num_sentences - 10, 10):
+            edge_list.append([i, i + 10])
+            edge_list.append([i + 10, i])
+        
+        # Convert to edge index tensor
+        if edge_list:
+            edge_index = torch.tensor(edge_list, dtype=torch.long).t().contiguous()
+        else:
+            # At least create self-loops
+            edge_index = torch.tensor([[0], [0]], dtype=torch.long)
+        
+        # Create batch tensor (all nodes belong to the same graph)
+        batch = torch.zeros(num_sentences, dtype=torch.long)
+        
+        # IMPORTANT: Do NOT add batch dimension here
+        # HRPN expects x to be [num_nodes, embedding_dim] for graph processing
+        # x is already in the correct shape
+        
+        # Create the graph data object
+        graph_data = Data(x=x, edge_index=edge_index, batch=batch)
+        
+        return graph_data
+
+    def _create_fallback_embeddings(self, sentences: List[str], embedding_dim: int) -> torch.Tensor:
+        """Create simple embeddings when vectorizer is not available"""
+        import numpy as np
+        
+        embeddings = []
+        
+        # Risk-related keywords for different categories
+        risk_keywords = {
+            'bias_fairness': ['bias', 'fairness', 'discrimination', 'prejudice', 'stereotype', 'equitable'],
+            'privacy_data': ['privacy', 'data', 'personal', 'confidential', 'gdpr', 'consent'],
+            'safety_security': ['safety', 'security', 'vulnerability', 'threat', 'risk', 'exploit'],
+            'dual_use': ['dual-use', 'military', 'weapon', 'warfare', 'surveillance', 'misuse'],
+            'societal_impact': ['society', 'social', 'impact', 'community', 'employment', 'inequality'],
+            'transparency': ['transparency', 'explainable', 'interpretable', 'black-box', 'opaque', 'accountability']
+        }
+        
+        for sent in sentences:
+            sent_lower = sent.lower()
+            
+            # Create a feature vector
+            features = []
+            
+            # Basic features
+            features.extend([
+                len(sent.split()) / 50.0,  # Normalized sentence length
+                sent.count(',') / 10.0,     # Punctuation density
+                1.0 if '?' in sent else 0.0, # Question indicator
+                1.0 if any(word in sent_lower for word in ['should', 'must', 'need']) else 0.0,  # Modal verbs
+            ])
+            
+            # Risk category features
+            for category, keywords in risk_keywords.items():
+                score = sum(1.0 for keyword in keywords if keyword in sent_lower) / len(keywords)
+                features.append(score)
+            
+            # Pad with random values to reach embedding_dim
+            num_features = len(features)
+            if num_features < embedding_dim:
+                # Use deterministic pseudo-random values based on sentence content
+                np.random.seed(hash(sent) % 2**32)
+                padding = np.random.randn(embedding_dim - num_features) * 0.1
+                features.extend(padding)
+            else:
+                features = features[:embedding_dim]
+            
+            embeddings.append(features)
+        
+        return torch.tensor(embeddings, dtype=torch.float)
+    
     def find_similar_analyses(self, text: str, top_k: int = 5) -> List[Dict]:
         """Find similar previously analyzed texts"""
         if hasattr(self, 'analyzer_type'):
@@ -218,6 +372,7 @@ class GuardianEngine:
         # Perform traditional risk analysis
         risk_analysis = self._analyze_risks(processed_text)
         
+        graph_data = self._create_paper_graph(text)
         # Enhanced semantic analysis based on analyzer type
         if hasattr(self, 'analyzer_type') and self.analyzer_type in ['pgvector', 'faiss']:
             # Use enhanced semantic analysis
@@ -487,140 +642,173 @@ class GuardianEngine:
         return recommendations[:5]  # Return top 5 recommendations
 
 
-    def analyze(self, text: str, title: Optional[str] = None, 
-           use_cot: bool = True, options: Dict[str, Any] = None) -> Dict[str, Any]:
+    def analyze_text(self, text: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Main analysis method with enhanced evidence extraction
+        Perform complete text analysis with enhanced semantic analysis support
         """
-        start_time = time.time()
-        options = options or {}
+        if not text or not text.strip():
+            raise ValueError("Text cannot be empty")
         
-        logger.info(f"Starting analysis with use_cot={use_cot}, text_length={len(text)}")
+        # Check if CoT analysis is enabled in options
+        enable_cot = options.get('enable_cot', True) if options else True
+        cot_mode = options.get('cot_mode', 'enhanced') if options else 'enhanced'
         
         # Process text
         processed_text = self.text_processor.process(text)
         
-        # Perform risk analysis
-        risk_analysis = self.risk_analyzer.analyze_risks(text, processed_text)
+        # Detect domain
+        domain = self._detect_domain(text)
         
-        # CRITICAL: Add text and sentences for evidence extraction
-        risk_analysis['text'] = text
-        risk_analysis['sentences'] = self.text_processor.get_sentences(text)
+        # Perform traditional risk analysis
+        risk_analysis = self._analyze_risks(processed_text)
         
-        # Domain detection
-        domain = self._detect_domain(text, processed_text)
-        domain_confidence = 0.85
+        # Use HRPN for novel risk analysis
+        graph_data = self._create_paper_graph(text)
+        with torch.no_grad():
+            hrpn_risks = self.hrpn_model(
+                graph_data.x, 
+                graph_data.edge_index, 
+                graph_data.batch
+            )
         
-        # Apply domain-specific adapter if available
-        if domain and hasattr(self, 'lora_adapter') and self.lora_adapter:
-            try:
-                adapted_analysis = self.lora_adapter.apply_domain_adapter(
-                    text, domain, risk_analysis
-                )
-                risk_analysis.update(adapted_analysis)
-                domain_confidence = 0.95
-                if 'lora_domain' not in risk_analysis.get('analysis_methods', []):
-                    risk_analysis.setdefault('analysis_methods', []).append('lora_domain')
-            except Exception as e:
-                logger.warning(f"Failed to apply LoRA adapter: {e}")
+        # Convert to risk scores
+        risk_scores = {
+            'bias_fairness': hrpn_risks['risk_0'].item(),
+            'privacy_data': hrpn_risks['risk_1'].item(),
+            'safety_security': hrpn_risks['risk_2'].item(),
+            'dual_use': hrpn_risks['risk_3'].item(),
+            'societal_impact': hrpn_risks['risk_4'].item(),
+            'transparency': hrpn_risks['risk_5'].item()
+        }
         
-        # Semantic analysis integration
-        semantic_scores = {}
-        if hasattr(self, 'semantic_integrator') and self.semantic_integrator:
-            try:
-                semantic_scores = self.semantic_integrator.analyze(text)
-                # Merge semantic scores
-                for category, score in semantic_scores.items():
-                    if category in risk_analysis['risk_categories']:
-                        keyword_score = risk_analysis['risk_categories'][category]
-                        risk_analysis['risk_categories'][category] = (
-                            0.6 * keyword_score + 0.4 * score
-                        )
-                if 'semantic_svd' not in risk_analysis.get('analysis_methods', []):
-                    risk_analysis.setdefault('analysis_methods', []).append('semantic_svd')
-            except Exception as e:
-                logger.warning(f"Semantic analysis failed: {e}")
+        # Update risk analysis with HRPN scores
+        risk_analysis['risk_categories'] = risk_scores
         
-        # Chain of Thought analysis
-        cot_analysis = {}
-        if use_cot and self.cot_analyzer:
-            try:
-                cot_analysis = self.cot_analyzer.analyze_with_cot(
-                    text=text,
-                    risk_analysis=risk_analysis,
-                    domain=domain
-                )
-                if 'chain_of_thought' not in risk_analysis.get('analysis_methods', []):
-                    risk_analysis.setdefault('analysis_methods', []).append('chain_of_thought')
+        # Enhanced semantic analysis based on analyzer type
+        if hasattr(self, 'analyzer_type') and self.analyzer_type in ['pgvector', 'faiss']:
+            # Use enhanced semantic analysis
+            if self.analyzer_type == 'pgvector':
+                semantic_scores = self.semantic_analyzer.analyze_text_semantic_risk(text, store_results=True)
+            else:  # faiss
+                semantic_scores = self.semantic_analyzer.analyze_semantic_risk(text)
+            
+            # Get semantic evidence for each category
+            for category in risk_analysis['risk_categories']:
+                if self.analyzer_type == 'pgvector':
+                    semantic_evidence = self.semantic_analyzer.find_evidence_sentences(text, category, num_sentences=3)
+                else:  # faiss
+                    semantic_evidence = self.semantic_analyzer.find_evidence_with_embeddings(text, category, num_sentences=3)
                 
-                # Update risk scores with CoT insights
-                if 'cot_risk_scores' in cot_analysis:
-                    for category, cot_score in cot_analysis['cot_risk_scores'].items():
-                        if category in risk_analysis['risk_categories']:
-                            current_score = risk_analysis['risk_categories'][category]
-                            risk_analysis['risk_categories'][category] = (
-                                0.5 * current_score + 0.5 * cot_score
-                            )
+                # Store semantic evidence for later use
+                risk_analysis[f'{category}_semantic_evidence'] = semantic_evidence
+            
+            # Merge scores
+            for category, sem_score in semantic_scores.items():
+                if category in risk_analysis['risk_categories']:
+                    hrpn_score = risk_analysis['risk_categories'][category]
+                    risk_analysis['risk_categories'][category] = 0.5 * hrpn_score + 0.3 * sem_score
+            
+            risk_analysis['analysis_methods'] = ['hrpn', f'semantic_{self.analyzer_type}']
+            
+        else:
+            # Use original SVD-based semantic analysis
+            traditional_scores = {cat: score for cat, score in risk_analysis['risk_categories'].items()}
+            enhanced_scores = self.semantic_integrator.enhance_risk_analysis(text, traditional_scores)
+            risk_analysis['risk_categories'] = enhanced_scores
+            risk_analysis['analysis_methods'] = ['hrpn', 'semantic_svd']
+        
+        # Enhance with LoRA if available
+        if self.lora_adapters and domain and domain in self.lora_adapters:
+            lora_adapter = self.lora_adapters[domain]
+            lora_risks = lora_adapter.compute_risk_embeddings(text, list(risk_analysis['risk_categories'].keys()))
+            
+            # Merge with existing scores
+            for category, lora_score in lora_risks.items():
+                if category in risk_analysis['risk_categories']:
+                    current_score = risk_analysis['risk_categories'][category]
+                    risk_analysis['risk_categories'][category] = 0.7 * current_score + 0.3 * lora_score
+            
+            if 'analysis_methods' in risk_analysis:
+                risk_analysis['analysis_methods'].append(f'lora_{domain}')
+        
+        # Perform Chain of Thought analysis if enabled
+        cot_analysis = None
+        if enable_cot and cot_mode != 'disabled':
+            try:
+                if cot_mode == 'standalone':
+                    # Standalone CoT analysis
+                    cot_result = self.cot_analyzer.analyze_with_reasoning(text)
+                    cot_analysis = {
+                        'reasoning_chain': self.cot_analyzer.get_detailed_reasoning(cot_result),
+                        'cot_risk_scores': cot_result.final_risk_scores,
+                        'reasoning_summary': cot_result.reasoning_summary,
+                        'overall_cot_risk': cot_result.overall_risk,
+                        'cot_confidence': cot_result.confidence,
+                        'mode': 'standalone'
+                    }
+                else:  # enhanced mode
+                    # Integrate CoT with traditional analysis
+                    enhanced_analysis = self.cot_integrator.enhance_analysis_with_cot(
+                        text, {'risk_categories': risk_analysis['risk_categories']}
+                    )
+                    cot_analysis = enhanced_analysis['chain_of_thought']
+                    cot_analysis['mode'] = 'enhanced'
+                    # Update risk scores with CoT enhancement
+                    risk_analysis['risk_categories'] = enhanced_analysis['risk_categories']
+                    if 'analysis_methods' in risk_analysis:
+                        risk_analysis['analysis_methods'].append('chain_of_thought')
+                
+                logger.info(f"CoT analysis completed in {cot_mode} mode")
             except Exception as e:
                 logger.error(f"CoT analysis failed: {e}")
-                use_cot = False
+                cot_analysis = {'error': str(e), 'mode': cot_mode}
         
-        # Calculate overall risk score
-        overall_risk_score = self._calculate_overall_risk(risk_analysis['risk_categories'])
+        # Rest of the analysis...
+        sentiment_analysis = self._analyze_sentiment(text)
+        statistics = self._generate_statistics(processed_text, risk_analysis)
         
-        # CRITICAL: Always use enhanced assessment methods
-        if use_cot and cot_analysis:
+        # Generate risk assessments with CoT insights
+        if cot_analysis and 'error' not in cot_analysis:
             risk_assessments = self._generate_risk_assessments_with_cot(
                 text, processed_text, risk_analysis, cot_analysis
             )
         else:
-            # Use enhanced method even without CoT
-            risk_assessments = self._generate_enhanced_risk_assessments(
-                text, processed_text, risk_analysis, semantic_scores
+            risk_assessments = self._generate_risk_assessments_with_semantic(
+                text, processed_text, risk_analysis
             )
         
-        # Sentiment analysis
-        sentiment = self._analyze_sentiment(text)
+        # Generate recommendations with CoT insights
+        recommendations = self._generate_recommendations_with_cot(
+            risk_analysis, sentiment_analysis, cot_analysis
+        )
         
-        # Calculate processing time
-        processing_time = time.time() - start_time
+        # Add semantic analysis metadata
+        semantic_metadata = {}
+        if hasattr(self, 'semantic_analyzer') and self.semantic_analyzer.is_fitted:
+            # Extract latent topics
+            topics = self.semantic_analyzer.get_latent_topics(n_topics=5)
+            semantic_metadata['latent_topics'] = topics
         
-        # Compile final results
-        result = {
-            'text': text[:1000] + '...' if len(text) > 1000 else text,
-            'title': title or 'Untitled',
-            'timestamp': datetime.utcnow().isoformat(),
+        # Build final response
+        response = {
+            'text': text,
             'domain': domain,
-            'domain_confidence': domain_confidence,
-            'overall_risk_score': overall_risk_score,
-            'risk_level': self._get_overall_risk_level(overall_risk_score),
-            'risk_categories': risk_analysis['risk_categories'],
-            'detected_keywords': risk_analysis.get('detected_keywords', {}),
-            'analysis_methods': risk_analysis.get('analysis_methods', ['keyword']),
+            'domain_confidence': self._get_domain_confidence(text, domain),
+            'processed_text': processed_text,
+            'risk_analysis': risk_analysis,
+            'sentiment': sentiment_analysis,
+            'statistics': statistics,
             'risk_assessments': risk_assessments,
-            'sentiment': sentiment,
-            'statistics': {
-                'word_count': processed_text['statistics']['word_count'],
-                'sentence_count': processed_text['statistics']['sentence_count'],
-                'processing_time': round(processing_time, 2)
-            },
-            'recommendations': self._generate_overall_recommendations(risk_assessments),
-            'metadata': {
-                'version': '1.0.0',
-                'analysis_date': datetime.utcnow().isoformat()
-            }
+            'recommendations': recommendations,
+            'semantic_metadata': semantic_metadata,
+            'timestamp': datetime.utcnow().isoformat()
         }
         
-        # Add CoT-specific results if available
+        # Add CoT analysis to response if available
         if cot_analysis:
-            result['cot_analysis'] = {
-                'reasoning_chain': cot_analysis.get('reasoning_chain', {}),
-                'confidence': cot_analysis.get('cot_confidence', 0.5),
-                'risk_scores': cot_analysis.get('cot_risk_scores', {})
-            }
+            response['chain_of_thought'] = cot_analysis
         
-        logger.info(f"Analysis completed in {processing_time:.2f}s")
-        return result
+        return response
     
     def _calculate_overall_risk(self, risk_categories: Dict[str, float]) -> float:
         """Calculate overall risk score from category scores"""
