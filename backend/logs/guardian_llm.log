@@ -6793,3 +6793,8 @@ OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Pytho
 2025-06-17 23:20:00,323 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
 2025-06-17 23:20:00,331 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
 2025-06-17 23:20:17,284 INFO: Paper saved with ID: paper_1750130405.217239, Title: jssm-24-227.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:428]
+2025-06-18 00:13:29,768 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:52]
+2025-06-18 00:13:29,772 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:281]
+2025-06-18 00:13:34,025 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:52]
+2025-06-18 00:13:34,030 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:281]
+2025-06-18 00:13:49,776 INFO: Paper saved with ID: paper_1750133623.540174, Title: 48195472_Major_Project_Report.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/api/routes.py:428]
