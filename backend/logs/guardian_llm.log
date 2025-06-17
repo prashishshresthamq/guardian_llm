@@ -6726,3 +6726,70 @@ Traceback (most recent call last):
 jinja2.exceptions.TemplateNotFound: 404.html
 2025-06-12 13:53:51,571 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:68]
 2025-06-14 23:54:15,630 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:02:16,572 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:02:16,596 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:02:20,087 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:02:20,091 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:02:59,719 INFO: Paper saved with ID: paper_1750129372.712228, Title: COMP8420_Assignments.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:428]
+2025-06-17 23:07:21,131 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:07:21,170 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:07:40,355 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:07:40,391 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:07:44,065 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:07:44,075 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:10:20,331 ERROR: Paper analysis error: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py", line 308, in analyze_paper
+    dynamic_analyzer = DynamicRiskAnalyzer()
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/dynamic_risk_analyzer.py", line 11, in __init__
+    self.nlp = spacy.load("en_core_web_sm")
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/guardian_env/lib/python3.13/site-packages/spacy/__init__.py", line 52, in load
+    return util.load_model(
+           ~~~~~~~~~~~~~~~^
+        name,
+        ^^^^^
+    ...<4 lines>...
+        config=config,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/guardian_env/lib/python3.13/site-packages/spacy/util.py", line 484, in load_model
+    raise IOError(Errors.E050.format(name=name))
+OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+ [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:465]
+2025-06-17 23:13:43,482 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:13:43,487 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:13:47,082 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:13:47,086 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:13:53,559 ERROR: Paper analysis error: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py", line 308, in analyze_paper
+    dynamic_analyzer = DynamicRiskAnalyzer()
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/core/dynamic_risk_analyzer.py", line 11, in __init__
+    self.nlp = spacy.load("en_core_web_sm")
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/guardian_env/lib/python3.13/site-packages/spacy/__init__.py", line 52, in load
+    return util.load_model(
+           ~~~~~~~~~~~~~~~^
+        name,
+        ^^^^^
+    ...<4 lines>...
+        config=config,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/guardian_env/lib/python3.13/site-packages/spacy/util.py", line 484, in load_model
+    raise IOError(Errors.E050.format(name=name))
+OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+ [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:465]
+2025-06-17 23:14:56,653 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:14:56,663 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:15:02,015 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:15:02,018 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:15:20,518 INFO: Paper saved with ID: paper_1750130106.95594, Title: jssm-24-227.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:428]
+2025-06-17 23:19:56,791 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:19:56,798 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:20:00,323 INFO: Guardian LLM startup [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:52]
+2025-06-17 23:20:00,331 INFO: Database tables created/verified [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/app.py:281]
+2025-06-17 23:20:17,284 INFO: Paper saved with ID: paper_1750130405.217239, Title: jssm-24-227.pdf [in /Users/prashishshrestha/Desktop/Assignment_3_Major_Project/guardian_llm/backend/api/routes.py:428]
