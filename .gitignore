@@ -27,13 +27,7 @@ env/
 ENV/
 
 # Model checkpoints and weights (too large for GitHub)
-checkpoints/
-*.pt
-*.pth
-*.bin
-*.safetensors
-models/*.pt
-models/*.pth
+
 
 # Database files
 *.db
