@@ -6798,3 +6798,389 @@ OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Pytho
 2025-06-18 00:13:34,025 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:52]
 2025-06-18 00:13:34,030 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/app.py:281]
 2025-06-18 00:13:49,776 INFO: Paper saved with ID: paper_1750133623.540174, Title: 48195472_Major_Project_Report.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/Guardian_LLM/guardian_llm/backend/api/routes.py:428]
+2025-06-21 21:55:13,720 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-06-21 21:55:13,734 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-06-21 21:55:17,696 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-06-21 21:55:17,701 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-06-21 21:57:07,909 INFO: Paper saved with ID: paper_1750471014.546969, Title: Enagement_detection_thesis_report_final.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2025-06-28 16:07:27,350 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-06-28 16:07:27,356 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-06-28 16:07:34,014 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-06-28 16:07:34,018 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-06-28 16:07:38,960 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2025-06-28 16:07:38,999 INFO: Found 1 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2025-06-28 16:07:40,866 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2025-06-28 16:07:40,869 INFO: Found 1 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2025-06-28 16:07:59,538 INFO: Paper saved with ID: paper_1751054872.989504, Title: 1st Semester.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2025-07-10 16:10:30,110 INFO: Paper saved with ID: paper_1752091824.437474, Title: Prashish_Shrestha_Resume.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2025-07-10 16:10:44,278 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2025-07-10 16:10:44,286 INFO: Found 3 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2025-10-01 16:32:47,083 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-10-01 16:32:47,090 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-10-01 16:32:56,889 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2025-10-01 16:32:56,893 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2025-10-01 16:34:06,590 INFO: Paper saved with ID: paper_1759264423.869766, Title: AI_Reasoning_in_Deep_Learning_Era_From_Symbolic_AI.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2026-04-02 12:58:31,002 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 12:58:31,012 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 12:58:44,027 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 12:58:44,031 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:14:29,824 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:14:29,834 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:14:42,705 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:14:42,709 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:14:42,804 ERROR: Exception on / [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py", line 82, in index
+    return render_template('index.html',
+                         title='Guardian LLM - AI Text Analysis',
+                         active_page='home',
+                         show_breadcrumb=False)  # No breadcrumb on home page
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/frontend/templates/index.html", line 854, in template
+    {% comment %} <span>v1.0.0 | COMP8420 Project</span> {% endcomment %}
+    ^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: Encountered unknown tag 'comment'.
+2026-04-02 17:14:42,809 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:66]
+2026-04-02 17:14:43,386 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:14:43,390 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 17:14:46,936 ERROR: Exception on / [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py", line 82, in index
+    return render_template('index.html',
+                         title='Guardian LLM - AI Text Analysis',
+                         active_page='home',
+                         show_breadcrumb=False)  # No breadcrumb on home page
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/frontend/templates/index.html", line 854, in template
+    {% comment %} <span>v1.0.0 | COMP8420 Project</span> {% endcomment %}
+    ^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: Encountered unknown tag 'comment'.
+2026-04-02 17:14:46,940 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:66]
+2026-04-02 17:14:47,037 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:14:47,040 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 17:15:09,445 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:15:09,452 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:15:23,361 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:15:23,373 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:15:23,449 ERROR: Exception on / [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py", line 82, in index
+    return render_template('index.html',
+                         title='Guardian LLM - AI Text Analysis',
+                         active_page='home',
+                         show_breadcrumb=False)  # No breadcrumb on home page
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/frontend/templates/index.html", line 854, in template
+    {% comment %} <span>v1.0.0 | COMP8420 Project</span> {% endcomment %}
+    ^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: Encountered unknown tag 'comment'.
+2026-04-02 17:15:23,454 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:66]
+2026-04-02 17:15:23,705 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:15:23,718 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 17:17:11,648 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:17:11,657 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:17:24,860 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:17:24,867 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:17:50,181 ERROR: Paper analysis error: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 308, in analyze_paper
+    dynamic_analyzer = DynamicRiskAnalyzer()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/dynamic_risk_analyzer.py", line 11, in __init__
+    self.nlp = spacy.load("en_core_web_sm")
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/spacy/__init__.py", line 74, in load
+    return util.load_model(
+           ~~~~~~~~~~~~~~~^
+        name,
+        ^^^^^
+    ...<4 lines>...
+        config=config,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/spacy/util.py", line 531, in load_model
+    raise IOError(Errors.E050.format(name=name))
+OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory.
+ [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:465]
+2026-04-02 17:19:12,462 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:19:12,473 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:19:26,180 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 17:19:26,184 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 17:19:57,722 INFO: Paper saved with ID: paper_1775071172.618686, Title: 2503.09103v1.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2026-04-02 17:20:23,822 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:20:23,832 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 17:25:23,859 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:25:23,865 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 17:26:24,501 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2026-04-02 17:26:24,670 INFO: Found 6 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2026-04-02 17:27:59,219 INFO: Paper saved with ID: paper_1775071659.989242, Title: 2503.09103v1.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2026-04-02 17:30:23,853 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 17:30:23,860 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 22:25:45,383 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 22:25:45,866 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 22:26:15,641 INFO: Paper saved with ID: paper_1775089547.082391, Title: 2503.09103v1.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2026-04-02 22:30:38,121 ERROR: Exception on /api/health [GET] [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py", line 781, in health_check
+    'engine': guardian_engine.get_status()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/core/guardian_engine.py", line 97, in get_status
+    'lora_adapter': 'active' if self.lora_adapter else 'inactive',
+                                ^^^^^^^^^^^^^^^^^
+AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you mean: 'lora_adapters'?
+2026-04-02 22:30:38,135 ERROR: Internal error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:101]
+2026-04-02 22:31:43,495 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2026-04-02 22:31:43,539 INFO: Found 8 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2026-04-02 22:37:52,632 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 22:37:52,651 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 22:38:00,121 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 22:38:00,125 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 22:38:06,028 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2026-04-02 22:38:06,063 INFO: Found 8 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2026-04-02 22:38:36,549 INFO: Paper saved with ID: paper_1775090292.487077, Title: 2503.09103v1.pdf [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:428]
+2026-04-02 23:07:54,147 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 23:07:54,154 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 23:08:01,175 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 23:08:01,179 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 23:10:31,069 INFO: GET /papers called with args: ImmutableMultiDict([('limit', '5'), ('sort', 'upload_time'), ('order', 'desc')]) [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:934]
+2026-04-02 23:10:31,129 INFO: Found 9 papers [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/api/routes.py:958]
+2026-04-02 23:12:56,429 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 23:12:56,435 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-02 23:13:03,517 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-02 23:13:03,521 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
