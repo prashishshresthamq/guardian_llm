@@ -272,24 +272,18 @@ def test():
 # Development server configuration
 if __name__ == '__main__':
     # Ensure all required directories exist
-    os.makedirs('logs', exist_ok=True)
-    os.makedirs('uploads', exist_ok=True)
-    
-    # Create database tables if they don't exist
     with app.app_context():
         db.create_all()
         app.logger.info('Database tables created/verified')
+    
+    os.makedirs('logs', exist_ok=True)
+    os.makedirs('uploads', exist_ok=True)
     
     # Get port from environment or use default
     port = int(os.environ.get('PORT', 5000))
     
     # Run the application
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=app.config['DEBUG'],
-        use_reloader=True
-    )
+    app.run(host='0.0.0.0', port=port)
 else:
     # Production logging
     gunicorn_logger = logging.getLogger('gunicorn.error')
