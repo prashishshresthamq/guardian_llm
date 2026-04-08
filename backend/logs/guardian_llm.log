@@ -7192,3 +7192,5 @@ AttributeError: 'GuardianEngine' object has no attribute 'lora_adapter'. Did you
 2026-04-05 09:20:13,188 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
 2026-04-05 09:20:21,517 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
 2026-04-05 09:20:21,521 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:281]
+2026-04-05 13:13:39,377 INFO: Guardian LLM startup [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:52]
+2026-04-05 13:13:39,400 INFO: Database tables created/verified [in /Users/prashishshrestha/Documents/Macquire University/3rd Semester/COMP8420/guardian_llm/backend/app.py:277]
