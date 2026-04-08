@@ -283,7 +283,7 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     
     # Run the application
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=7860, debug=False)
 else:
     # Production logging
     gunicorn_logger = logging.getLogger('gunicorn.error')
