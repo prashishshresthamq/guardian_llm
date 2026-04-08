@@ -73,4 +73,6 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp
+*.temp*.mp4
+wandb/
+*.wandb
